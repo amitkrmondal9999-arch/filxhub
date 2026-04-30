@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix - Watch Movies & TV Shows</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #141414; color: white; overflow-x: hidden; }
+        
+        /* Navbar */
+        header { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, transparent); z-index: 100; transition: background 0.3s; }
+        header.scrolled { background-color: #141414; }
+        .logo { color: #E50914; font-size: 2rem; font-weight: bold; text-transform: uppercase; cursor: pointer; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-links a:hover { color: #b3b3b3; }
+
+        /* Hero Section */
+        .hero { position: relative; height: 80vh; background: url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070') center/cover no-repeat; display: flex; align-items: center; padding: 0 40px; }
+        .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 60%), linear-gradient(to top, #141414 0%, transparent 20%); }
+        .hero-content { position: relative; z-index: 10; max-width: 600px; }
+        .hero-title { font-size: 4rem; font-weight: 800; margin-bottom: 15px; }
+        .hero-desc { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.5; text-shadow: 2px 2px 4px rgba(0,0,0,0.45); }
+        .btn { padding: 10px 25px; font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; outline: none; margin-right: 10px; transition: transform 0.2s; }
+        .btn:hover { transform: scale(1.05); }
+        .btn-play { background-color: white; color: black; }
+        .btn-info { background-color: rgba(109, 109, 110, 0.7); color: white; }
+
+        /* Movie Rows */
+        .row { margin: 20px 0 20px 40px; }
+        .row h2 { font-size: 1.4rem; margin-bottom: 15px; }
+        .posters { display: flex; overflow-y: hidden; overflow-x: scroll; scroll-behavior: smooth; padding: 20px 0; }
+        .posters::-webkit-scrollbar { display: none; }
+        .poster { object-fit: cover; width: 250px; max-height: 140px; margin-right: 15px; border-radius: 4px; transition: transform 450ms; cursor: pointer; }
+        .poster:hover { transform: scale(1.08); }
+
+        /* Video Modal */
+        #videoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        #videoModal video { width: 80%; max-width: 1000px; outline: none; border-radius: 8px; }
+        .close-btn { position: absolute; top: 30px; right: 40px; color: white; font-size: 2rem; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            header { padding: 15px 20px; }
+            .hero { height: 60vh; padding: 0 20px; }
+            .hero-title { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            .poster { width: 150px; max-height: 85px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="navbar">
+        <div class="logo">StreamFlix</div>
+        <div class="nav-links">
+            <a href="#">Home</a>
+            <a href="#">TV Shows</a>
+            <a href="#">Movies</a>
+            <a href="#">New & Popular</a>
+        </div>
+    </header>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Featured Movie</h1>
+            <p class="hero-desc">Experience the most thrilling action movie of the year. Watch now to discover the hidden secrets of the universe.</p>
+            <button class="btn btn-play">▶ Play</button>
+            <button class="btn btn-info">ℹ More Info</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <h2>Recently Added</h2>
+        <div class="posters" id="movie-container">
+            <!-- Videos dynamically injected here via Firebase -->
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="videoModal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <video id="player" controls controlsList="nodownload"></video>
+    </div>
+
+    <script type="module">
+        // Firebase Configuration (Replace with your actual keys)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyBRFRPTE6tWgklvjsHx8HZ_A_GNwc4a8Q0",
+  authDomain: "flixhub-c9cf3.firebaseapp.com",
+  projectId: "flixhub-c9cf3",
+  storageBucket: "flixhub-c9cf3.firebasestorage.app",
+  messagingSenderId: "552182480135",
+  appId: "1:552182480135:web:a62d19a9f990e09c0299a2",
+  measurementId: "G-CTQ879CYFD"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fetch Movies from Firestore
+        async function fetchMovies() {
+            const container = document.getElementById('movie-container');
+            container.innerHTML = "<p>Loading videos...</p>";
+
+            try {
+                const q = query(collection(db, "videos"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                container.innerHTML = ""; // Clear loading
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const img = document.createElement('img');
+                    img.src = data.thumbnailUrl;
+                    img.className = 'poster';
+                    img.alt = data.title;
+                    img.onclick = () => openModal(data.videoUrl);
+                    container.appendChild(img);
+                });
+
+                if(querySnapshot.empty) {
+                    container.innerHTML = "<p style='color:#808080;'>No videos uploaded yet. Visit Admin Panel.</p>";
+                }
+            } catch (error) {
+                console.error("Error fetching videos: ", error);
+                container.innerHTML = "<p>Error loading content.</p>";
+            }
+        }
+
+        fetchMovies();
+
+        // Navbar Scroll Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+    </script>
+
+    <script>
+        // Modal Logic
+        const modal = document.getElementById('videoModal');
+        const player = document.getElementById('player');
+
+        function openModal(videoUrl) {
+            modal.style.display = 'flex';
+            player.src = videoUrl;
+            player.play();
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            player.pause();
+            player.src = "";
+        }
+    </script>
+</body>
+</html>

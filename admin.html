@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; background-color: #f4f7f6; color: #333; height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 250px; background-color: #1f2937; color: white; padding: 20px; display: flex; flex-direction: column; }
+        .sidebar h2 { font-size: 1.5rem; margin-bottom: 30px; color: #E50914; }
+        .sidebar a { color: #d1d5db; text-decoration: none; padding: 12px; margin-bottom: 10px; border-radius: 5px; transition: background 0.2s; }
+        .sidebar a:hover, .sidebar a.active { background-color: #374151; color: white; }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header { margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; color: #111827; }
+
+        /* Upload Card */
+        .upload-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 600px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #4b5563; }
+        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; outline: none; transition: border 0.3s; }
+        input[type="text"]:focus, textarea:focus { border-color: #3b82f6; }
+        textarea { resize: vertical; height: 100px; }
+        
+        .btn-upload { background-color: #E50914; color: white; padding: 12px 20px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: background 0.3s; }
+        .btn-upload:hover { background-color: #b80710; }
+        .btn-upload:disabled { background-color: #fca5a5; cursor: not-allowed; }
+
+        /* Progress Bar */
+        .progress-container { width: 100%; background-color: #e5e7eb; border-radius: 5px; margin-top: 15px; display: none; }
+        .progress-bar { height: 10px; background-color: #10b981; border-radius: 5px; width: 0%; transition: width 0.3s; }
+        #status-msg { margin-top: 10px; font-weight: 600; font-size: 0.9rem; text-align: center; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Admin Dashboard</h2>
+        <a href="#" class="active">Upload Video</a>
+        <a href="#">Manage Content</a>
+        <a href="#">Settings</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Upload New Content</h1>
+            <p>Add new movies or shows to your platform.</p>
+        </div>
+
+        <div class="upload-card">
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="title">Video Title</label>
+                    <input type="text" id="title" placeholder="Enter video title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="desc">Description</label>
+                    <textarea id="desc" placeholder="Enter video description" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="thumbnail">Thumbnail Image (JPG/PNG)</label>
+                    <input type="file" id="thumbnail" accept="image/*" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="video">Video File (MP4)</label>
+                    <input type="file" id="video" accept="video/mp4,video/x-m4v,video/*" required>
+                </div>
+
+                <button type="submit" class="btn-upload" id="submitBtn">Upload to Database</button>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div id="status-msg"></div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Configuration (Must match frontend)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyBRFRPTE6tWgklvjsHx8HZ_A_GNwc4a8Q0",
+  authDomain: "flixhub-c9cf3.firebaseapp.com",
+  projectId: "flixhub-c9cf3",
+  storageBucket: "flixhub-c9cf3.firebasestorage.app",
+  messagingSenderId: "552182480135",
+  appId: "1:552182480135:web:a62d19a9f990e09c0299a2",
+  measurementId: "G-CTQ879CYFD"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const form = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.getElementById('progressContainer');
+        const statusMsg = document.getElementById('status-msg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const desc = document.getElementById('desc').value;
+            const thumbFile = document.getElementById('thumbnail').files[0];
+            const videoFile = document.getElementById('video').files[0];
+
+            if (!thumbFile || !videoFile) return alert("Please select both files.");
+
+            submitBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            statusMsg.style.color = '#3b82f6';
+            statusMsg.innerText = "Uploading files... Please wait.";
+
+            try {
+                // 1. Upload Thumbnail
+                const thumbRef = ref(storage, `thumbnails/${Date.now()}_${thumbFile.name}`);
+                await uploadBytesResumable(thumbRef, thumbFile);
+                const thumbUrl = await getDownloadURL(thumbRef);
+
+                // 2. Upload Video with Progress
+                const videoRef = ref(storage, `videos/${Date.now()}_${videoFile.name}`);
+                const uploadTask = uploadBytesResumable(videoRef, videoFile);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                        statusMsg.innerText = `Uploading Video: ${Math.round(progress)}%`;
+                    }, 
+                    (error) => {
+                        throw error;
+                    }, 
+                    async () => {
+                        // 3. On Video Upload Complete, Get URL
+                        const videoUrl = await getDownloadURL(uploadTask.snapshot.ref);
+
+                        // 4. Save to Firestore
+                        await addDoc(collection(db, "videos"), {
+                            title: title,
+                            description: desc,
+                            thumbnailUrl: thumbUrl,
+                            videoUrl: videoUrl,
+                            timestamp: serverTimestamp()
+                        });
+
+                        statusMsg.style.color = '#10b981';
+                        statusMsg.innerText = "Upload Complete & Saved to Database!";
+                        form.reset();
+                        submitBtn.disabled = false;
+                        setTimeout(() => { progressContainer.style.display = 'none'; statusMsg.innerText = ''; }, 3000);
+                    }
+                );
+            } catch (error) {
+                console.error(error);
+                statusMsg.style.color = 'red';
+                statusMsg.innerText = "Error uploading. Check console.";
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
