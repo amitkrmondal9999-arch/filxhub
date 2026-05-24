@@ -4,120 +4,296 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Luxe</title>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        :root { --primary: #111111; --secondary: #666666; --bg-color: #eef0f4; --white: #ffffff; --accent: #d4af37; --danger: #ff4757; --success: #2ed573; }
+        
+        :root { 
+            --primary: #111111; 
+            --secondary: #6b7280; 
+            --bg-color: #f3f4f6; 
+            --white: #ffffff; 
+            --accent: #d4af37; 
+            --sidebar-bg: #111827;
+            --sidebar-hover: #1f2937;
+            --danger: #ef4444; 
+            --success: #10b981; 
+            --border: #e5e7eb;
+        }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--primary); }
 
-        /* Navigation */
-        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--white); box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-size: 24px; font-weight: 700; color: var(--primary); }
-        .back-link { text-decoration: none; font-weight: 600; color: var(--secondary); transition: 0.3s; }
-        .back-link:hover { color: var(--accent); }
-
-        /* Views Setup */
-        .view-section { display: none; padding: 40px 5%; animation: fadeIn 0.4s ease; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Panels */
-        .admin-panel { background: var(--white); padding: 40px; border-radius: 12px; max-width: 500px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        .header-title { font-size: 24px; margin-bottom: 20px; text-align: center; border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; width: 100%;}
+        /* ==============================
+           1. LOGIN SCREEN STYLES
+           ============================== */
+        #login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+        }
         
-        /* Form */
+        .login-box {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+
+        .login-box i.fa-shield-halved { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
+        .login-box h2 { font-size: 24px; margin-bottom: 5px; }
+        .login-box p { color: var(--secondary); margin-bottom: 25px; font-size: 14px; }
+
+        /* ==============================
+           2. DASHBOARD LAYOUT STYLES
+           ============================== */
+        #dashboard-container { display: none; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--white);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent);
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-menu { flex: 1; padding: 20px 0; list-style: none; }
+        .sidebar-menu li { margin-bottom: 5px; }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: 0.3s;
+            font-size: 15px;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--sidebar-hover);
+            color: var(--white);
+            border-left: 4px solid var(--accent);
+        }
+
+        .sidebar-menu i { width: 30px; font-size: 18px; }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid #374151; }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            margin-left: 260px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            height: 70px;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .topbar-title { font-size: 18px; font-weight: 600; }
+        .user-profile { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
+        .user-profile i { font-size: 30px; color: var(--secondary); }
+
+        /* Content Area */
+        .content-area { padding: 30px; flex: 1; }
+        
+        .admin-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+        }
+
+        .card-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
+        .card-header h3 { font-size: 20px; color: var(--primary); }
+        .card-header p { font-size: 13px; color: var(--success); margin-top: 5px; }
+
+        /* ==============================
+           3. FORM & BUTTON STYLES
+           ============================== */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: var(--secondary); }
-        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; background: #fafafa; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: var(--white); box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+        .form-group.full-width { grid-column: 1 / -1; }
         
-        .btn-submit { width: 100%; padding: 14px; background: var(--primary); color: var(--white); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px; transition: 0.3s; }
-        .btn-submit:hover { background: var(--accent); color: var(--primary); }
-        .btn-logout { background: var(--danger); margin-top: 15px; }
-        .btn-logout:hover { background: #e03e4d; color: white; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #374151; }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border); 
+            border-radius: 8px; outline: none; transition: 0.3s; background: #f9fafb; font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus { 
+            border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); 
+        }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--accent); color: var(--primary); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { background: var(--danger); color: var(--white); }
 
-        /* Toast Notification */
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        /* Toast */
+        #toast { visibility: hidden; min-width: 250px; background-color: #1f2937; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 10px; opacity: 0;} }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 10px; opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <!-- Simple Admin Nav -->
-    <nav class="top-nav">
-        <div class="logo">LUXE Admin</div>
-        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
-    </nav>
-
-    <!-- 1. Admin Login View -->
-    <section id="login-view" class="view-section active">
-        <div class="admin-panel" style="text-align: center;">
-            <i class="fa-solid fa-shield-halved" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
-            <h2 class="header-title">Secure Login</h2>
-            <p style="color: var(--secondary); margin-bottom: 25px; font-size: 14px;">Please enter admin credentials.</p>
+    <!-- ==========================================
+         LOGIN SCREEN (Visible initially)
+         ========================================== -->
+    <div id="login-container">
+        <div class="login-box">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>Admin Portal</h2>
+            <p>Enter your credentials to access the dashboard</p>
             
             <form id="admin-login-form">
-                <div class="form-group">
-                    <label>Admin Email</label>
+                <div class="form-group full-width">
+                    <label>Email Address</label>
                     <input type="email" id="admin-email" placeholder="admin@luxe.com" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label>Password</label>
-                    <input type="password" id="admin-pass" placeholder="Enter Password" required>
+                    <input type="password" id="admin-pass" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn-submit">Login to Dashboard</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login Securely</button>
             </form>
+            <a href="index.html" style="display: block; margin-top: 20px; font-size: 13px; color: var(--secondary); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to Customer Store</a>
         </div>
-    </section>
+    </div>
 
-    <!-- 2. Admin Dashboard View (Upload Product) -->
-    <section id="dashboard-view" class="view-section">
-        <div class="admin-panel">
-            <h2 class="header-title" style="text-align:left;">Upload New Product</h2>
-            <p style="color: var(--success); margin-bottom: 25px; font-weight: 500; font-size: 14px;"><i class="fa-solid fa-circle-check"></i> System Connected</p>
+
+    <!-- ==========================================
+         DASHBOARD SCREEN (Visible after login)
+         ========================================== -->
+    <div id="dashboard-container">
+        
+        <!-- Left Sidebar Panel -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">LUXE.</div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fa-solid fa-plus-square"></i> Upload Product</a></li>
+                <!-- Demo Links (Visual only) -->
+                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-box-open"></i> Manage Inventory</a></li>
+                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-cart-shopping"></i> Orders</a></li>
+                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-users"></i> Customers</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="btn btn-danger" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </aside>
+
+        <!-- Right Main Content Area -->
+        <main class="main-wrapper">
             
-            <form id="add-product-form">
-                <div class="form-group">
-                    <label>Product Name</label>
-                    <input type="text" id="p-name" placeholder="E.g. Rolex Watch" required>
+            <!-- Top Navigation Bar -->
+            <header class="topbar">
+                <div class="topbar-title">Dashboard Overview</div>
+                <div class="user-profile">
+                    <span>Admin User</span>
+                    <i class="fa-solid fa-circle-user"></i>
                 </div>
-                <div class="form-group">
-                    <label>Price (₹)</label>
-                    <input type="number" id="p-price" placeholder="E.g. 5000" required>
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="p-category" required>
-                        <option value="Men">Men</option>
-                        <option value="Women">Women</option>
-                        <option value="Electronics">Electronics</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Image URL (Link)</label>
-                    <input type="url" id="p-image" placeholder="https://example.com/image.jpg" required>
-                </div>
-                <button type="submit" class="btn-submit" id="upload-btn"><i class="fa-solid fa-cloud-arrow-up"></i> Publish Product</button>
-            </form>
+            </header>
 
-            <button class="btn-submit btn-logout" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-        </div>
-    </section>
+            <!-- Main Content Area -->
+            <div class="content-area">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent); margin-right: 8px;"></i> Upload New Product</h3>
+                        <p><i class="fa-solid fa-circle-check"></i> Database connected securely</p>
+                    </div>
 
-    <!-- Toast -->
+                    <form id="add-product-form">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>Product Name</label>
+                                <input type="text" id="p-name" placeholder="e.g. Premium Rolex Watch" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="p-price" placeholder="e.g. 5000" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="p-category" required>
+                                    <option value="Men">Men's Collection</option>
+                                    <option value="Women">Women's Collection</option>
+                                    <option value="Electronics">Electronics</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label>Image URL</label>
+                                <input type="url" id="p-image" placeholder="https://example.com/image.jpg" required>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <button type="submit" class="btn btn-primary" id="upload-btn"><i class="fa-solid fa-check"></i> Publish Product to Store</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
     <div id="toast">Message</div>
 
     <script>
         // ==========================================
-        // 1. SUPABASE CONFIGURATION (Paste SAME keys here)
+        // 1. SUPABASE CONFIGURATION
         // ==========================================
         const SUPABASE_URL = 'https://sojeovapebcmofnnafbu.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
 
         // ==========================================
         // 2. ADMIN LOGIN LOGIC
@@ -130,8 +306,11 @@
             // Demo Login check
             if(email === 'admin@luxe.com' && pass === 'admin123') {
                 showToast("Login Successful!");
-                document.getElementById('login-view').classList.remove('active');
-                document.getElementById('dashboard-view').classList.add('active');
+                
+                // Hide Login, Show Dashboard Layout
+                loginContainer.style.display = 'none';
+                dashboardContainer.style.display = 'block';
+                
                 this.reset();
             } else {
                 showToast("Invalid Credentials!");
@@ -139,8 +318,9 @@
         });
 
         function adminLogout() {
-            document.getElementById('dashboard-view').classList.remove('active');
-            document.getElementById('login-view').classList.add('active');
+            // Hide Dashboard, Show Login
+            dashboardContainer.style.display = 'none';
+            loginContainer.style.display = 'flex';
             showToast("Logged Out Successfully");
         }
 
@@ -150,8 +330,11 @@
         document.getElementById('add-product-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('upload-btn');
+            
+            // Loading State
             btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading...";
             btn.disabled = true;
+            btn.style.opacity = "0.7";
 
             const newProduct = {
                 name: document.getElementById('p-name').value,
@@ -161,19 +344,25 @@
             };
 
             try {
-                const { data, error } = await supabase.from('products').insert([newProduct]);
+                // FIXED: Used 'db.from' instead of 'supabase.from'
+                const { data, error } = await db.from('products').insert([newProduct]);
                 if (error) throw error;
                 
-                showToast("Product Uploaded Successfully!");
+                showToast("Product Published Successfully!");
                 this.reset();
             } catch (error) {
                 alert("Upload Error: " + error.message);
             } finally {
-                btn.innerHTML = "<i class='fa-solid fa-cloud-arrow-up'></i> Publish Product";
+                // Reset Button State
+                btn.innerHTML = "<i class='fa-solid fa-check'></i> Publish Product to Store";
                 btn.disabled = false;
+                btn.style.opacity = "1";
             }
         });
 
+        // ==========================================
+        // 4. UTILITY FUNCTIONS
+        // ==========================================
         function showToast(message) {
             const toast = document.getElementById("toast");
             toast.innerText = message;
