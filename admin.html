@@ -3,176 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | Luxe</title>
+    <title>Admin Workspace | Luxe</title>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
         :root { 
-            --primary: #111111; 
-            --secondary: #6b7280; 
-            --bg-color: #f3f4f6; 
-            --white: #ffffff; 
-            --accent: #d4af37; 
-            --sidebar-bg: #111827;
-            --sidebar-hover: #1f2937;
-            --danger: #ef4444; 
-            --success: #10b981; 
-            --border: #e5e7eb;
+            --primary: #0f172a; --secondary: #64748b; --bg-color: #f8fafc; --white: #ffffff; 
+            --accent: #3b82f6; /* Modern Blue accent */
+            --sidebar-bg: #0f172a; --sidebar-hover: #1e293b;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --border: #e2e8f0;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-color); color: var(--primary); }
 
-        /* ==============================
-           1. LOGIN SCREEN STYLES
-           ============================== */
-        #login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #111827 0%, #374151 100%);
-        }
-        
-        .login-box {
-            background: var(--white);
-            padding: 40px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            text-align: center;
-        }
+        /* Login Screen */
+        #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--primary); }
+        .login-box { background: var(--white); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; }
+        .login-box i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
 
-        .login-box i.fa-shield-halved { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
-        .login-box h2 { font-size: 24px; margin-bottom: 5px; }
-        .login-box p { color: var(--secondary); margin-bottom: 25px; font-size: 14px; }
-
-        /* ==============================
-           2. DASHBOARD LAYOUT STYLES
-           ============================== */
+        /* Dashboard Layout */
         #dashboard-container { display: none; min-height: 100vh; }
         
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background-color: var(--sidebar-bg);
-            color: var(--white);
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            z-index: 100;
-        }
-
-        .sidebar-brand {
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            color: var(--accent);
-            border-bottom: 1px solid #374151;
-        }
-
+        .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--white); position: fixed; top: 0; left: 0; height: 100vh; display: flex; flex-direction: column; z-index: 100; }
+        .sidebar-brand { height: 70px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; letter-spacing: 2px; border-bottom: 1px solid #334155; }
         .sidebar-menu { flex: 1; padding: 20px 0; list-style: none; }
-        .sidebar-menu li { margin-bottom: 5px; }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 15px 25px;
-            color: #9ca3af;
-            text-decoration: none;
-            transition: 0.3s;
-            font-size: 15px;
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background-color: var(--sidebar-hover);
-            color: var(--white);
-            border-left: 4px solid var(--accent);
-        }
-
+        .sidebar-menu a { display: flex; align-items: center; padding: 15px 25px; color: #94a3b8; text-decoration: none; transition: 0.3s; font-size: 15px; border-left: 4px solid transparent; cursor: pointer; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: var(--sidebar-hover); color: var(--white); border-left: 4px solid var(--accent); }
         .sidebar-menu i { width: 30px; font-size: 18px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid #334155; }
 
-        .sidebar-footer { padding: 20px; border-top: 1px solid #374151; }
-
-        /* Main Content Wrapper */
-        .main-wrapper {
-            margin-left: 260px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Topbar */
-        .topbar {
-            height: 70px;
-            background: var(--white);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 99;
-        }
-
-        .topbar-title { font-size: 18px; font-weight: 600; }
-        .user-profile { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; }
-        .user-profile i { font-size: 30px; color: var(--secondary); }
-
-        /* Content Area */
-        .content-area { padding: 30px; flex: 1; }
+        .main-wrapper { margin-left: 260px; display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { height: 70px; background: var(--white); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
         
-        .admin-card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-        }
+        /* Views */
+        .content-area { padding: 30px; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .dashboard-section { display: none; animation: fadeIn 0.4s ease; }
+        .dashboard-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
-        .card-header h3 { font-size: 20px; color: var(--primary); }
-        .card-header p { font-size: 13px; color: var(--success); margin-top: 5px; }
+        /* Premium Form Layout (Shopify Style) */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header h2 { font-size: 24px; font-weight: 600; }
+        
+        .form-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        @media (max-width: 900px) { .form-layout { grid-template-columns: 1fr; } }
 
-        /* ==============================
-           3. FORM & BUTTON STYLES
-           ============================== */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--white); border-radius: 12px; padding: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 25px; }
+        .card-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+
         .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group.full-width { grid-column: 1 / -1; }
-        
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #374151; }
-        .form-group input, .form-group select { 
-            width: 100%; padding: 12px 15px; border: 1px solid var(--border); 
-            border-radius: 8px; outline: none; transition: 0.3s; background: #f9fafb; font-size: 14px;
-        }
-        .form-group input:focus, .form-group select:focus { 
-            border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); 
-        }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: var(--white); }
-        .btn-primary:hover { background: var(--accent); color: var(--primary); }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-        .btn-danger:hover { background: var(--danger); color: var(--white); }
+        .form-group.row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px; color: var(--secondary); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; outline: none; transition: 0.3s; font-size: 14px; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
 
-        /* Toast */
-        #toast { visibility: hidden; min-width: 250px; background-color: #1f2937; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        /* Dynamic Media Inputs */
+        .image-input-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .remove-img-btn { background: var(--danger); color: white; border: none; border-radius: 6px; padding: 0 15px; cursor: pointer; }
+
+        /* Badges & Text */
+        .discount-badge { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: none; }
+        .help-text { font-size: 12px; color: var(--secondary); margin-top: 5px; }
+
+        /* Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 14px; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: var(--white); }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: var(--bg-color); color: var(--primary); border: 1px solid var(--border); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 100%; justify-content: center;}
+        
+        #toast { visibility: hidden; background-color: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 10px; opacity: 0; } }
@@ -180,189 +87,275 @@
 </head>
 <body>
 
-    <!-- ==========================================
-         LOGIN SCREEN (Visible initially)
-         ========================================== -->
+    <!-- 1. LOGIN SCREEN -->
     <div id="login-container">
         <div class="login-box">
-            <i class="fa-solid fa-shield-halved"></i>
-            <h2>Admin Portal</h2>
-            <p>Enter your credentials to access the dashboard</p>
-            
+            <i class="fa-brands fa-space-awesome"></i>
+            <h2 style="margin-bottom: 20px;">Luxe Workspace</h2>
             <form id="admin-login-form">
-                <div class="form-group full-width">
-                    <label>Email Address</label>
-                    <input type="email" id="admin-email" placeholder="admin@luxe.com" required>
+                <div class="form-group">
+                    <input type="email" id="admin-email" placeholder="Email Address" required>
                 </div>
-                <div class="form-group full-width">
-                    <label>Password</label>
-                    <input type="password" id="admin-pass" placeholder="••••••••" required>
+                <div class="form-group">
+                    <input type="password" id="admin-pass" placeholder="Password" required>
                 </div>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Login Securely</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Sign In</button>
             </form>
-            <a href="index.html" style="display: block; margin-top: 20px; font-size: 13px; color: var(--secondary); text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Back to Customer Store</a>
         </div>
     </div>
 
-
-    <!-- ==========================================
-         DASHBOARD SCREEN (Visible after login)
-         ========================================== -->
+    <!-- 2. DASHBOARD AREA -->
     <div id="dashboard-container">
-        
-        <!-- Left Sidebar Panel -->
         <aside class="sidebar">
             <div class="sidebar-brand">LUXE.</div>
             <ul class="sidebar-menu">
-                <li><a href="#" class="active"><i class="fa-solid fa-plus-square"></i> Upload Product</a></li>
-                <!-- Demo Links (Visual only) -->
-                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-box-open"></i> Manage Inventory</a></li>
-                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-cart-shopping"></i> Orders</a></li>
-                <li><a href="#" onclick="showToast('Feature coming soon!')"><i class="fa-solid fa-users"></i> Customers</a></li>
+                <li><a class="active" onclick="switchTab('upload-sec', this)"><i class="fa-solid fa-plus"></i> Add Product</a></li>
+                <li><a onclick="switchTab('inventory-sec', this)"><i class="fa-solid fa-box"></i> Inventory</a></li>
+                <li><a onclick="switchTab('orders-sec', this)"><i class="fa-solid fa-cart-shopping"></i> Orders</a></li>
+                <li><a onclick="switchTab('customers-sec', this)"><i class="fa-solid fa-users"></i> Customers</a></li>
             </ul>
             <div class="sidebar-footer">
-                <button class="btn btn-danger" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+                <button class="btn btn-danger" onclick="adminLogout()"><i class="fa-solid fa-power-off"></i> Logout</button>
             </div>
         </aside>
 
-        <!-- Right Main Content Area -->
         <main class="main-wrapper">
-            
-            <!-- Top Navigation Bar -->
             <header class="topbar">
-                <div class="topbar-title">Dashboard Overview</div>
-                <div class="user-profile">
-                    <span>Admin User</span>
-                    <i class="fa-solid fa-circle-user"></i>
+                <div style="font-weight: 600;">Workspace</div>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <a href="index.html" style="text-decoration:none; color:var(--secondary); font-size:14px;"><i class="fa-solid fa-eye"></i> View Store</a>
+                    <i class="fa-solid fa-circle-user" style="font-size:24px; color:var(--secondary);"></i>
                 </div>
             </header>
 
-            <!-- Main Content Area -->
             <div class="content-area">
-                <div class="admin-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent); margin-right: 8px;"></i> Upload New Product</h3>
-                        <p><i class="fa-solid fa-circle-check"></i> Database connected securely</p>
+                
+                <!-- A. UPLOAD PRODUCT SECTION -->
+                <section id="upload-sec" class="dashboard-section active">
+                    <div class="page-header">
+                        <h2>Add New Product</h2>
+                        <button class="btn btn-primary" onclick="submitProductForm()"><i class="fa-solid fa-save"></i> Save Product</button>
                     </div>
 
-                    <form id="add-product-form">
-                        <div class="form-grid">
-                            <div class="form-group full-width">
-                                <label>Product Name</label>
-                                <input type="text" id="p-name" placeholder="e.g. Premium Rolex Watch" required>
+                    <div class="form-layout">
+                        <!-- Left Column (Main Info) -->
+                        <div class="left-col">
+                            <!-- Basic Info -->
+                            <div class="card">
+                                <div class="card-title">Basic Details</div>
+                                <div class="form-group">
+                                    <label>Product Title</label>
+                                    <input type="text" id="p-name" placeholder="Short sleeve t-shirt" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea id="p-desc" placeholder="Product details, fabric, fit etc..."></textarea>
+                                </div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label>Price (₹)</label>
-                                <input type="number" id="p-price" placeholder="e.g. 5000" required>
+
+                            <!-- Media -->
+                            <div class="card">
+                                <div class="card-title">Media (Images)</div>
+                                <p class="help-text" style="margin-bottom: 15px;">Add image URLs. The first URL will be the main thumbnail.</p>
+                                <div id="media-container">
+                                    <div class="image-input-row">
+                                        <input type="url" class="img-url-input" placeholder="https://image-url-1.jpg" required>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="addImageField()" style="margin-top: 10px; font-size: 12px;"><i class="fa-solid fa-plus"></i> Add another URL</button>
                             </div>
-                            
-                            <div class="form-group">
-                                <label>Category</label>
-                                <select id="p-category" required>
-                                    <option value="Men">Men's Collection</option>
-                                    <option value="Women">Women's Collection</option>
-                                    <option value="Electronics">Electronics</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group full-width">
-                                <label>Image URL</label>
-                                <input type="url" id="p-image" placeholder="https://example.com/image.jpg" required>
+
+                            <!-- Variations -->
+                            <div class="card">
+                                <div class="card-title">Variants (Optional)</div>
+                                <div class="form-group row">
+                                    <div>
+                                        <label>Color</label>
+                                        <input type="text" id="p-color" placeholder="e.g. Matte Black">
+                                    </div>
+                                    <div>
+                                        <label>Size / Type</label>
+                                        <input type="text" id="p-var" placeholder="e.g. XL, 256GB">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 10px;">
-                            <button type="submit" class="btn btn-primary" id="upload-btn"><i class="fa-solid fa-check"></i> Publish Product to Store</button>
+
+                        <!-- Right Column (Pricing & Org) -->
+                        <div class="right-col">
+                            <!-- Pricing -->
+                            <div class="card">
+                                <div class="card-title">
+                                    Pricing 
+                                    <span class="discount-badge" id="discount-badge">0% OFF</span>
+                                </div>
+                                <div class="form-group">
+                                    <label>Selling Price (₹)</label>
+                                    <input type="number" id="p-selling" placeholder="Customer pays this" required oninput="calculateDiscount()">
+                                </div>
+                                <div class="form-group row">
+                                    <div>
+                                        <label>MRP / Compare at (₹)</label>
+                                        <input type="number" id="p-mrp" placeholder="Original price" required oninput="calculateDiscount()">
+                                    </div>
+                                    <div>
+                                        <label>Cost Price (₹)</label>
+                                        <input type="number" id="p-cost" placeholder="Your cost">
+                                    </div>
+                                </div>
+                                <p class="help-text">Cost price is hidden from customers. Used for profit calculation.</p>
+                            </div>
+
+                            <!-- Organization -->
+                            <div class="card">
+                                <div class="card-title">Organization & Inventory</div>
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <select id="p-category" required>
+                                        <option value="Men">Men's Fashion</option>
+                                        <option value="Women">Women's Fashion</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Accessories">Accessories</option>
+                                    </select>
+                                </div>
+                                <div class="form-group row">
+                                    <div>
+                                        <label>SKU (Stock Keeping Unit)</label>
+                                        <input type="text" id="p-sku" placeholder="e.g. TSHIRT-BLK-XL">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </section>
+
+                <!-- B. INVENTORY SECTION (Placeholder for Tabs working) -->
+                <section id="inventory-sec" class="dashboard-section">
+                    <div class="page-header"><h2>Inventory Management</h2></div>
+                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">Inventory list will appear here.</p></div>
+                </section>
+
+                <!-- C. ORDERS SECTION -->
+                <section id="orders-sec" class="dashboard-section">
+                    <div class="page-header"><h2>Recent Orders</h2></div>
+                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">No orders received yet.</p></div>
+                </section>
+
+                <!-- D. CUSTOMERS SECTION -->
+                <section id="customers-sec" class="dashboard-section">
+                    <div class="page-header"><h2>Customer Database</h2></div>
+                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">Customer data will sync here.</p></div>
+                </section>
+
             </div>
         </main>
     </div>
 
-    <!-- Toast Notification -->
     <div id="toast">Message</div>
 
     <script>
-        // ==========================================
-        // 1. SUPABASE CONFIGURATION
-        // ==========================================
         const SUPABASE_URL = 'https://sojeovapebcmofnnafbu.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const loginContainer = document.getElementById('login-container');
-        const dashboardContainer = document.getElementById('dashboard-container');
-
-        // ==========================================
-        // 2. ADMIN LOGIN LOGIC
-        // ==========================================
+        // 1. LOGIN
         document.getElementById('admin-login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const email = document.getElementById('admin-email').value;
             const pass = document.getElementById('admin-pass').value;
-
-            // Demo Login check
             if(email === 'admin@luxe.com' && pass === 'admin123') {
-                showToast("Login Successful!");
-                
-                // Hide Login, Show Dashboard Layout
-                loginContainer.style.display = 'none';
-                dashboardContainer.style.display = 'block';
-                
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'block';
                 this.reset();
-            } else {
-                showToast("Invalid Credentials!");
-            }
+            } else { showToast("Invalid Credentials!"); }
         });
 
         function adminLogout() {
-            // Hide Dashboard, Show Login
-            dashboardContainer.style.display = 'none';
-            loginContainer.style.display = 'flex';
-            showToast("Logged Out Successfully");
+            document.getElementById('dashboard-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'flex';
         }
 
-        // ==========================================
-        // 3. PRODUCT UPLOAD LOGIC
-        // ==========================================
-        document.getElementById('add-product-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('upload-btn');
+        // 2. TAB SWITCHING LOGIC
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
             
-            // Loading State
-            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading...";
-            btn.disabled = true;
-            btn.style.opacity = "0.7";
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // 3. DISCOUNT CALCULATOR
+        function calculateDiscount() {
+            let mrp = parseFloat(document.getElementById('p-mrp').value) || 0;
+            let selling = parseFloat(document.getElementById('p-selling').value) || 0;
+            let badge = document.getElementById('discount-badge');
+            
+            if(mrp > 0 && selling < mrp && selling > 0) {
+                let percent = Math.round(((mrp - selling) / mrp) * 100);
+                badge.innerText = percent + '% OFF';
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // 4. DYNAMIC MULTIPLE IMAGES
+        function addImageField() {
+            const container = document.getElementById('media-container');
+            const div = document.createElement('div');
+            div.className = 'image-input-row';
+            div.innerHTML = `
+                <input type="url" class="img-url-input" placeholder="https://image-url.jpg" required>
+                <button type="button" class="remove-img-btn" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        // 5. UPLOAD TO SUPABASE
+        async function submitProductForm() {
+            // Basic validation
+            const name = document.getElementById('p-name').value;
+            const selling_price = document.getElementById('p-selling').value;
+            if(!name || !selling_price) return showToast("Please fill all required fields!");
+
+            // Collect all image URLs into an array
+            let imageUrls = [];
+            document.querySelectorAll('.img-url-input').forEach(input => {
+                if(input.value) imageUrls.push(input.value);
+            });
+            if(imageUrls.length === 0) return showToast("At least one image URL is required!");
 
             const newProduct = {
-                name: document.getElementById('p-name').value,
-                price: document.getElementById('p-price').value,
+                name: name,
+                description: document.getElementById('p-desc').value,
                 category: document.getElementById('p-category').value,
-                image_url: document.getElementById('p-image').value
+                sku: document.getElementById('p-sku').value,
+                color: document.getElementById('p-color').value,
+                variations: document.getElementById('p-var').value,
+                selling_price: selling_price,
+                mrp: document.getElementById('p-mrp').value,
+                cost_price: document.getElementById('p-cost').value || null,
+                images: imageUrls // Save array of images to Supabase JSON column
             };
 
             try {
-                // FIXED: Used 'db.from' instead of 'supabase.from'
+                showToast("Saving product...");
                 const { data, error } = await db.from('products').insert([newProduct]);
                 if (error) throw error;
                 
                 showToast("Product Published Successfully!");
-                this.reset();
+                
+                // Clear Form Fields
+                document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+                document.getElementById('discount-badge').style.display = 'none';
+                // Reset image inputs to just 1
+                document.getElementById('media-container').innerHTML = `<div class="image-input-row"><input type="url" class="img-url-input" placeholder="https://image-url-1.jpg" required></div>`;
+
             } catch (error) {
                 alert("Upload Error: " + error.message);
-            } finally {
-                // Reset Button State
-                btn.innerHTML = "<i class='fa-solid fa-check'></i> Publish Product to Store";
-                btn.disabled = false;
-                btn.style.opacity = "1";
             }
-        });
+        }
 
-        // ==========================================
-        // 4. UTILITY FUNCTIONS
-        // ==========================================
         function showToast(message) {
             const toast = document.getElementById("toast");
             toast.innerText = message;
