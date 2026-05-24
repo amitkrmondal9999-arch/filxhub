@@ -13,22 +13,18 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--bg-color); color: var(--primary); padding-bottom: 70px; }
 
-        /* Navigation */
         .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--white); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .logo { font-size: 24px; font-weight: 700; letter-spacing: 2px; cursor: pointer; }
         .nav-links a { text-decoration: none; color: var(--secondary); margin: 0 15px; font-weight: 500; cursor: pointer; transition: 0.3s; }
         .nav-links a:hover, .nav-links a.active { color: var(--primary); }
         .nav-icons i { font-size: 20px; margin-left: 20px; cursor: pointer; color: var(--primary); transition: 0.3s; }
-        
         .cart-icon-container { position: relative; display: inline-block; }
         .cart-badge { position: absolute; top: -8px; right: -10px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
 
-        /* Views */
         .view-section { display: none; padding: 20px 5%; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Components */
         .category-scroll { display: flex; overflow-x: auto; padding: 10px 0 20px 0; gap: 15px; scrollbar-width: none; }
         .category-scroll::-webkit-scrollbar { display: none; }
         .cat-btn { padding: 8px 20px; border: 1px solid #ddd; background: var(--white); border-radius: 20px; cursor: pointer; font-weight: 500; white-space: nowrap; }
@@ -41,10 +37,10 @@
         .product-info { padding: 15px; }
         .product-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
         .product-price { font-size: 18px; color: var(--accent); font-weight: 700; }
+        .mrp-price { font-size: 13px; color: var(--secondary); text-decoration: line-through; margin-left: 5px; }
         .btn-submit, .add-to-cart-btn { width: 100%; padding: 10px; margin-top: 10px; background: var(--primary); color: var(--white); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-submit:hover, .add-to-cart-btn:hover { background: var(--accent); color: var(--primary); }
 
-        /* Panels */
         .panel-box { background: var(--white); padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .cart-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 15px 0; }
         .cart-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
@@ -52,13 +48,11 @@
         .cart-remove { color: var(--danger); cursor: pointer; font-size: 18px; }
         .cart-total { text-align: right; font-size: 20px; font-weight: 700; margin-top: 20px; }
 
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--secondary); font-size: 12px; cursor: pointer; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
 
-        /* Toast */
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 14px; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 60px; opacity: 0;} }
@@ -73,19 +67,15 @@
 
     <nav class="top-nav">
         <div class="logo" onclick="switchTab('home')">LUXE.</div>
-        <div class="nav-links desktop-only">
-            <a onclick="switchTab('home')" class="active" data-tab="home">Home</a>
-        </div>
+        <div class="nav-links desktop-only"><a onclick="switchTab('home')" class="active" data-tab="home">Home</a></div>
         <div class="nav-icons">
             <div class="cart-icon-container" onclick="switchTab('cart')">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span class="cart-badge" id="cart-count">0</span>
+                <i class="fa-solid fa-cart-shopping"></i><span class="cart-badge" id="cart-count">0</span>
             </div>
             <i class="fa-regular fa-user desktop-only" onclick="switchTab('profile')"></i>
         </div>
     </nav>
 
-    <!-- 1. Home View -->
     <section id="home-view" class="view-section active">
         <div class="category-scroll">
             <button class="cat-btn active" onclick="filterProducts('All', this)">All</button>
@@ -98,17 +88,15 @@
         </div>
     </section>
 
-    <!-- 2. Cart View -->
     <section id="cart-view" class="view-section">
         <div class="panel-box">
             <h2 class="header-title">Your Cart</h2>
             <div id="cart-items-container"></div>
             <div class="cart-total" id="cart-total-price">Total: ₹0</div>
-            <button class="btn-submit" style="margin-top:20px; padding: 12px;">Proceed to Checkout</button>
+            <button class="btn-submit" id="checkout-btn" style="margin-top:20px; padding: 12px;" onclick="placeOrder()">Proceed to Checkout</button>
         </div>
     </section>
 
-    <!-- 3. Profile View -->
     <section id="profile-view" class="view-section">
         <div class="panel-box" style="text-align: center;">
             <i class="fa-regular fa-circle-user" style="font-size: 80px; color: var(--accent); margin-bottom: 15px;"></i>
@@ -118,7 +106,6 @@
         </div>
     </section>
 
-    <!-- Bottom Navigation without Admin -->
     <nav class="bottom-nav mobile-only">
         <div class="nav-item active" onclick="switchTab('home')" data-tab="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
         <div class="nav-item" onclick="switchTab('cart')" data-tab="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></div>
@@ -128,7 +115,6 @@
     <div id="toast">Message</div>
 
     <script>
-        // Supabase Initialization
         const SUPABASE_URL = 'https://sojeovapebcmofnnafbu.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -140,13 +126,11 @@
             document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
             document.getElementById(`${tabName}-view`).classList.add('active');
             
-            document.querySelectorAll('.nav-links a').forEach(nav => nav.classList.remove('active'));
-            const activeDesktopNav = document.querySelector(`.nav-links a[data-tab="${tabName}"]`);
-            if(activeDesktopNav) activeDesktopNav.classList.add('active');
-
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            const activeMobileNav = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
-            if(activeMobileNav) activeMobileNav.classList.add('active');
+            document.querySelectorAll('.nav-links a, .nav-item').forEach(nav => nav.classList.remove('active'));
+            const dNav = document.querySelector(`.nav-links a[data-tab="${tabName}"]`);
+            const mNav = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
+            if(dNav) dNav.classList.add('active');
+            if(mNav) mNav.classList.add('active');
 
             if(tabName === 'cart') renderCart();
         }
@@ -171,21 +155,27 @@
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 const prodData = JSON.stringify(p).replace(/"/g, '&quot;');
+                
+                // Nayi schema (selling_price aur images array) ke hisaab se UI mapping
+                let displayPrice = p.selling_price || p.price; 
+                let mrp = p.mrp ? `<span class="mrp-price">₹${p.mrp}</span>` : '';
+                let thumb = (p.images && p.images.length > 0) ? p.images[0] : (p.image_url || 'https://via.placeholder.com/250?text=No+Image');
+
                 card.innerHTML = `
-                    <img src="${p.image_url}" alt="${p.name}" class="product-img" onerror="this.src='https://via.placeholder.com/250?text=No+Image'">
+                    <img src="${thumb}" alt="${p.name}" class="product-img">
                     <div class="product-info">
                         <h3 class="product-title">${p.name}</h3>
-                        <p class="product-price">₹${p.price}</p>
+                        <p class="product-price">₹${displayPrice} ${mrp}</p>
                         <button class="add-to-cart-btn" onclick="addToCart(${prodData})"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
                     </div>`;
                 list.appendChild(card);
             });
         }
 
-        function filterProducts(category, btnElement) {
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            renderProducts(category === 'All' ? allProducts : allProducts.filter(item => item.category === category));
+        function filterProducts(cat, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderProducts(cat === 'All' ? allProducts : allProducts.filter(i => i.category === cat));
         }
 
         function addToCart(product) {
@@ -198,27 +188,69 @@
             cart.splice(index, 1);
             document.getElementById('cart-count').innerText = cart.length;
             renderCart();
-            showToast("Item removed");
         }
 
         function renderCart() {
             const container = document.getElementById('cart-items-container');
             const totalEl = document.getElementById('cart-total-price');
+            const btn = document.getElementById('checkout-btn');
             container.innerHTML = '';
-            if (cart.length === 0) { container.innerHTML = '<p style="text-align:center;">Cart is empty.</p>'; totalEl.innerText = 'Total: ₹0'; return; }
 
+            if (cart.length === 0) { 
+                container.innerHTML = '<p style="text-align:center;">Cart is empty.</p>'; 
+                totalEl.innerText = 'Total: ₹0'; 
+                btn.style.display = 'none';
+                return; 
+            }
+
+            btn.style.display = 'block';
             let total = 0;
             cart.forEach((item, index) => {
-                total += parseFloat(item.price);
+                let price = item.selling_price || item.price;
+                let thumb = (item.images && item.images.length > 0) ? item.images[0] : (item.image_url || '');
+                total += parseFloat(price);
+                
                 const div = document.createElement('div');
                 div.className = 'cart-item';
                 div.innerHTML = `
-                    <img src="${item.image_url}" onerror="this.src='https://via.placeholder.com/60'">
-                    <div class="cart-details"><h4>${item.name}</h4><p style="color:var(--accent); font-weight:bold;">₹${item.price}</p></div>
+                    <img src="${thumb}" onerror="this.src='https://via.placeholder.com/60'">
+                    <div class="cart-details"><h4>${item.name}</h4><p style="color:var(--accent); font-weight:bold;">₹${price}</p></div>
                     <i class="fa-solid fa-trash cart-remove" onclick="removeFromCart(${index})"></i>`;
                 container.appendChild(div);
             });
             totalEl.innerText = `Total: ₹${total}`;
+        }
+
+        // --- NEW LIVE ORDER LOGIC ---
+        async function placeOrder() {
+            if(cart.length === 0) return;
+            
+            let total = cart.reduce((sum, item) => sum + parseFloat(item.selling_price || item.price), 0);
+            const btn = document.getElementById('checkout-btn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+            btn.disabled = true;
+
+            const newOrder = {
+                total_amount: total,
+                status: 'Pending',
+                items: cart
+            };
+
+            try {
+                const { error } = await db.from('orders').insert([newOrder]);
+                if (error) throw error;
+                
+                showToast("Order Placed Successfully!");
+                cart = []; // Empty cart
+                document.getElementById('cart-count').innerText = '0';
+                renderCart();
+                switchTab('home'); // Send user back to home
+            } catch (error) {
+                alert("Failed to place order: " + error.message);
+            } finally {
+                btn.innerHTML = 'Proceed to Checkout';
+                btn.disabled = false;
+            }
         }
 
         function showToast(message) {
