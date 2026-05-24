@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Workspace | Luxe</title>
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -21,12 +19,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-color); color: var(--primary); }
 
-        /* Login Screen */
         #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--primary); }
         .login-box { background: var(--white); padding: 40px; border-radius: 12px; width: 100%; max-width: 400px; text-align: center; }
         .login-box i { font-size: 50px; color: var(--accent); margin-bottom: 15px; }
 
-        /* Dashboard Layout */
         #dashboard-container { display: none; min-height: 100vh; }
         .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--white); position: fixed; top: 0; left: 0; height: 100vh; display: flex; flex-direction: column; z-index: 100; }
         .sidebar-brand { height: 70px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; letter-spacing: 2px; border-bottom: 1px solid #334155; }
@@ -39,7 +35,6 @@
         .main-wrapper { margin-left: 260px; display: flex; flex-direction: column; min-height: 100vh; }
         .topbar { height: 70px; background: var(--white); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
         
-        /* Views */
         .content-area { padding: 30px; flex: 1; max-width: 1200px; margin: 0 auto; width: 100%; }
         .dashboard-section { display: none; animation: fadeIn 0.4s ease; }
         .dashboard-section.active { display: block; }
@@ -48,17 +43,15 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .page-header h2 { font-size: 24px; font-weight: 600; }
 
-        /* Dashboard Overview Cards */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
         .stat-info h4 { font-size: 13px; color: var(--secondary); font-weight: 500; margin-bottom: 5px; }
         .stat-info h3 { font-size: 22px; color: var(--primary); font-weight: 700; }
 
-        /* Form Layout */
         .form-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
         @media (max-width: 900px) { .form-layout { grid-template-columns: 1fr; } }
-        .card { background: var(--white); border-radius: 12px; padding: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 25px; }
+        .card { background: var(--white); border-radius: 12px; padding: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 25px; overflow-x: auto;}
         .card-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
         .form-group { margin-bottom: 20px; text-align: left; }
@@ -68,59 +61,62 @@
         .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .form-group textarea { resize: vertical; min-height: 100px; }
 
-        /* Image Upload Area */
         .file-upload-box { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 30px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.3s; position: relative; }
         .file-upload-box:hover { border-color: var(--accent); background: #f1f5f9; }
         .file-upload-box input[type="file"] { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
         .file-upload-box i { font-size: 30px; color: var(--secondary); margin-bottom: 10px; }
-        
         .preview-container { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
         .preview-img { width: 70px; height: 70px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
 
         .discount-badge { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: none; }
-        .help-text { font-size: 12px; color: var(--secondary); margin-top: 5px; }
-
+        
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 14px; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent); color: var(--white); }
         .btn-primary:hover { background: #2563eb; }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); width: 100%; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
-        #toast { visibility: hidden; background-color: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        /* Inventory Table Styles */
+        .inv-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .inv-table th { text-align: left; padding: 12px; color: var(--secondary); border-bottom: 2px solid var(--border); font-weight: 500;}
+        .inv-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .inv-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border:none;}
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fee2e2; color: #b91c1c; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; margin-right: 10px; transition: 0.2s;}
+        .edit-btn { color: var(--accent); }
+        .del-btn { color: var(--danger); }
+
+        #toast { visibility: hidden; background: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
     </style>
 </head>
 <body>
 
-    <!-- 1. LOGIN SCREEN -->
     <div id="login-container">
         <div class="login-box">
             <i class="fa-brands fa-space-awesome"></i>
             <h2 style="margin-bottom: 20px;">Luxe Workspace</h2>
             <form id="admin-login-form">
-                <div class="form-group">
-                    <input type="email" id="admin-email" placeholder="Email Address" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" id="admin-pass" placeholder="Password" required>
-                </div>
+                <div class="form-group"><input type="email" id="admin-email" placeholder="Email Address" required></div>
+                <div class="form-group"><input type="password" id="admin-pass" placeholder="Password" required></div>
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
             </form>
         </div>
     </div>
 
-    <!-- 2. DASHBOARD AREA -->
     <div id="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-brand">LUXE.</div>
             <ul class="sidebar-menu">
                 <li><a class="active" onclick="switchTab('dashboard-sec', this)"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
-                <li><a onclick="switchTab('upload-sec', this)"><i class="fa-solid fa-plus"></i> Add Product</a></li>
+                <li><a onclick="switchTab('upload-sec', this)" id="nav-upload"><i class="fa-solid fa-plus"></i> Add Product</a></li>
                 <li><a onclick="switchTab('inventory-sec', this)"><i class="fa-solid fa-box"></i> Inventory</a></li>
                 <li><a onclick="switchTab('orders-sec', this)"><i class="fa-solid fa-cart-shopping"></i> Orders</a></li>
                 <li><a onclick="switchTab('customers-sec', this)"><i class="fa-solid fa-users"></i> Customers</a></li>
             </ul>
             <div class="sidebar-footer">
-                <button class="btn btn-danger" onclick="adminLogout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+                <button class="btn btn-danger" onclick="adminLogout()" style="width:100%"><i class="fa-solid fa-power-off"></i> Logout</button>
             </div>
         </aside>
 
@@ -129,54 +125,28 @@
                 <div style="font-weight: 600;">Workspace Admin</div>
                 <div style="display:flex; gap:15px; align-items:center;">
                     <a href="index.html" style="text-decoration:none; color:var(--secondary); font-size:14px;"><i class="fa-solid fa-eye"></i> View Store</a>
-                    <i class="fa-solid fa-circle-user" style="font-size:24px; color:var(--secondary);"></i>
                 </div>
             </header>
 
             <div class="content-area">
                 
-                <!-- A. OVERVIEW DASHBOARD SECTION -->
                 <section id="dashboard-sec" class="dashboard-section active">
                     <div class="page-header"><h2>Overview Dashboard</h2></div>
-                    
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fa-solid fa-wallet"></i></div>
-                            <div class="stat-info"><h4>Amount Received</h4><h3>₹45,200</h3></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--accent);"><i class="fa-solid fa-box-open"></i></div>
-                            <div class="stat-info"><h4>Total Products</h4><h3 id="stat-total-products">0</h3></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);"><i class="fa-solid fa-clock"></i></div>
-                            <div class="stat-info"><h4>Pending Orders</h4><h3>12</h3></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--purple);"><i class="fa-solid fa-truck-fast"></i></div>
-                            <div class="stat-info"><h4>Shipped</h4><h3>8</h3></div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon" style="background: rgba(100, 116, 139, 0.1); color: var(--secondary);"><i class="fa-solid fa-check-double"></i></div>
-                            <div class="stat-info"><h4>Delivered</h4><h3>145</h3></div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-title">Recent Activity</div>
-                        <p style="color:var(--secondary); font-size: 14px;">Store operations are running smoothly.</p>
+                        <div class="stat-card"><div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fa-solid fa-wallet"></i></div><div class="stat-info"><h4>Amount Received</h4><h3 id="stat-amount">₹0</h3></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--accent);"><i class="fa-solid fa-box-open"></i></div><div class="stat-info"><h4>Total Products</h4><h3 id="stat-total-products">0</h3></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><h4>Pending Orders</h4><h3 id="stat-pending">0</h3></div></div>
                     </div>
                 </section>
 
-                <!-- B. UPLOAD PRODUCT SECTION -->
+                <!-- UPLOAD / EDIT PRODUCT SECTION -->
                 <section id="upload-sec" class="dashboard-section">
                     <div class="page-header">
-                        <h2>Add New Product</h2>
-                        <button class="btn btn-primary" id="save-product-btn" onclick="submitProductForm()"><i class="fa-solid fa-save"></i> Save Product</button>
+                        <h2 id="form-title">Add New Product</h2>
+                        <button class="btn btn-primary" id="save-product-btn" onclick="submitProductForm()"><i class="fa-solid fa-save"></i> <span id="save-btn-text">Save Product</span></button>
                     </div>
 
                     <div class="form-layout">
-                        <!-- Left Column -->
                         <div class="left-col">
                             <div class="card">
                                 <div class="card-title">Basic Details</div>
@@ -184,28 +154,18 @@
                                 <div class="form-group"><label>Description</label><textarea id="p-desc" placeholder="Product details..."></textarea></div>
                             </div>
 
-                            <!-- Image Upload Box -->
                             <div class="card">
                                 <div class="card-title">Media (Images)</div>
                                 <div class="file-upload-box">
                                     <input type="file" id="p-images" multiple accept="image/*" onchange="previewImages(event)">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
-                                    <p style="font-weight: 500; color: var(--primary);">Click or drag images to upload</p>
-                                    <p class="help-text">Select multiple images (PNG, JPG).</p>
+                                    <p style="font-weight: 500;">Click or drag images to upload</p>
+                                    <p style="font-size:12px; color:var(--secondary);">Select multiple images (PNG, JPG).</p>
                                 </div>
                                 <div class="preview-container" id="image-preview-container"></div>
                             </div>
-
-                            <div class="card">
-                                <div class="card-title">Variants</div>
-                                <div class="form-group row">
-                                    <div><label>Color</label><input type="text" id="p-color" placeholder="e.g. Red"></div>
-                                    <div><label>Size / Type</label><input type="text" id="p-var" placeholder="e.g. XL, 9UK"></div>
-                                </div>
-                            </div>
                         </div>
 
-                        <!-- Right Column -->
                         <div class="right-col">
                             <div class="card">
                                 <div class="card-title">Pricing <span class="discount-badge" id="discount-badge">0% OFF</span></div>
@@ -218,14 +178,17 @@
 
                             <div class="card">
                                 <div class="card-title">Organization & Inventory</div>
-                                <div class="form-group">
-                                    <label>Category</label>
-                                    <select id="p-category" required>
-                                        <option value="Men">Men's Fashion</option>
-                                        <option value="Women">Women's Fashion</option>
-                                        <option value="Electronics">Electronics</option>
-                                        <option value="Shoes">Shoes</option>
-                                    </select>
+                                <div class="form-group row">
+                                    <div>
+                                        <label>Category</label>
+                                        <select id="p-category" required>
+                                            <option value="Men">Men</option>
+                                            <option value="Women">Women</option>
+                                            <option value="Electronics">Electronics</option>
+                                            <option value="Shoes">Shoes</option>
+                                        </select>
+                                    </div>
+                                    <div><label>Stock Quantity</label><input type="number" id="p-stock" placeholder="e.g. 50" value="10" required></div>
                                 </div>
                                 <div class="form-group"><label>SKU Code</label><input type="text" id="p-sku" placeholder="e.g. SNK-RED-9"></div>
                             </div>
@@ -233,23 +196,17 @@
                     </div>
                 </section>
 
-                <!-- C. INVENTORY SECTION -->
+                <!-- INVENTORY SECTION (NEW) -->
                 <section id="inventory-sec" class="dashboard-section">
                     <div class="page-header"><h2>Inventory Management</h2></div>
-                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">Inventory listing will appear here.</p></div>
+                    <div class="card" id="inventory-container">
+                        <!-- Table will be injected here via JS -->
+                        <div style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Loading Inventory...</div>
+                    </div>
                 </section>
 
-                <!-- D. ORDERS SECTION -->
-                <section id="orders-sec" class="dashboard-section">
-                    <div class="page-header"><h2>Manage Orders</h2></div>
-                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">Order tracking system UI.</p></div>
-                </section>
-
-                <!-- E. CUSTOMERS SECTION -->
-                <section id="customers-sec" class="dashboard-section">
-                    <div class="page-header"><h2>Customer Database</h2></div>
-                    <div class="card"><p style="color:var(--secondary); text-align:center; padding: 40px;">Customer details will sync here.</p></div>
-                </section>
+                <section id="orders-sec" class="dashboard-section"><div class="page-header"><h2>Manage Orders</h2></div><div class="card" id="orders-container">Loading...</div></section>
+                <section id="customers-sec" class="dashboard-section"><div class="page-header"><h2>Customer Database</h2></div><div class="card"><p style="text-align:center; padding: 40px;">Customer details will sync here.</p></div></section>
 
             </div>
         </main>
@@ -262,17 +219,16 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let selectedFiles = []; // Array to hold images
+        let selectedFiles = []; 
+        let globalProducts = []; // Save loaded products globally
+        let editingProductId = null; // Track if we are updating an existing product
 
-        // 1. LOGIN
         document.getElementById('admin-login-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value;
-            const pass = document.getElementById('admin-pass').value;
-            if(email === 'admin@luxe.com' && pass === 'admin123') {
+            if(document.getElementById('admin-email').value === 'admin@luxe.com' && document.getElementById('admin-pass').value === 'admin123') {
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('dashboard-container').style.display = 'block';
-                loadDashboardData(); // Load total product count
+                loadDashboardData(); 
                 this.reset();
             } else { showToast("Invalid Credentials!"); }
         });
@@ -282,31 +238,157 @@
             document.getElementById('login-container').style.display = 'flex';
         }
 
-        // 2. TAB SWITCHING
         function switchTab(tabId, element) {
             document.querySelectorAll('.dashboard-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
-            element.classList.add('active');
+            if(element) element.classList.add('active');
 
-            if(tabId === 'dashboard-sec') loadDashboardData();
+            if(tabId === 'dashboard-sec' || tabId === 'orders-sec') loadDashboardData();
+            if(tabId === 'inventory-sec') loadInventoryData();
+            
+            // Reset form if opening "Add Product"
+            if(tabId === 'upload-sec' && !editingProductId) resetForm();
         }
 
-        // 3. LOAD DASHBOARD STATS
         async function loadDashboardData() {
             try {
-                // Fetch actual product count from DB
-                const { count, error } = await db.from('products').select('*', { count: 'exact', head: true });
-                if (!error) document.getElementById('stat-total-products').innerText = count || 0;
+                const { count } = await db.from('products').select('*', { count: 'exact', head: true });
+                document.getElementById('stat-total-products').innerText = count || 0;
+                
+                const { data: orders } = await db.from('orders').select('*');
+                if(orders) {
+                    let total = 0, pending = 0;
+                    orders.forEach(o => { 
+                        total += parseFloat(o.total_amount); 
+                        if(o.status === 'Pending') pending++; 
+                    });
+                    document.getElementById('stat-amount').innerText = `₹${total.toLocaleString()}`;
+                    document.getElementById('stat-pending').innerText = pending;
+                }
             } catch (err) { console.log(err); }
         }
 
-        // 4. DISCOUNT CALCULATOR
+        /* ==========================================
+           INVENTORY MANAGEMENT (LOAD, TOGGLE, EDIT, DELETE)
+           ========================================== */
+        async function loadInventoryData() {
+            try {
+                const { data, error } = await db.from('products').select('*').order('id', { ascending: false });
+                if (error) throw error;
+                globalProducts = data;
+                
+                let html = `
+                    <table class="inv-table">
+                        <thead><tr><th>Image</th><th>Product Details</th><th>Price & Stock</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                `;
+                
+                if(data.length === 0) {
+                    html += `<tr><td colspan="5" style="text-align:center;">No products found in inventory.</td></tr>`;
+                } else {
+                    data.forEach(p => {
+                        let thumb = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/40';
+                        let statusClass = p.is_active ? 'status-active' : 'status-inactive';
+                        let statusText = p.is_active ? 'Active' : 'Inactive';
+                        
+                        html += `
+                        <tr>
+                            <td><img src="${thumb}" class="inv-img"></td>
+                            <td>
+                                <div style="font-weight:600;">${p.name}</div>
+                                <div style="font-size:12px; color:var(--secondary)">SKU: ${p.sku || 'N/A'}</div>
+                            </td>
+                            <td>
+                                <div style="color:var(--accent); font-weight:600;">₹${p.selling_price}</div>
+                                <div style="font-size:12px;">Stock: <b>${p.stock}</b> units</div>
+                            </td>
+                            <td>
+                                <button class="status-badge ${statusClass}" onclick="toggleStatus(${p.id}, ${p.is_active})">${statusText}</button>
+                            </td>
+                            <td>
+                                <button class="action-btn edit-btn" onclick="editProduct(${p.id})" title="Edit Product"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button class="action-btn del-btn" onclick="deleteProduct(${p.id})" title="Delete Product"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                }
+                html += `</tbody></table>`;
+                document.getElementById('inventory-container').innerHTML = html;
+            } catch (err) { console.error(err); }
+        }
+
+        async function toggleStatus(id, currentStatus) {
+            try {
+                await db.from('products').update({ is_active: !currentStatus }).eq('id', id);
+                showToast(currentStatus ? "Product deactivated" : "Product activated");
+                loadInventoryData();
+            } catch(e) { alert("Failed to change status"); }
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+            try {
+                await db.from('products').delete().eq('id', id);
+                showToast("Product deleted successfully!");
+                loadInventoryData();
+                loadDashboardData();
+            } catch(e) { alert("Failed to delete product"); }
+        }
+
+        function editProduct(id) {
+            const product = globalProducts.find(p => p.id === id);
+            if(!product) return;
+
+            // Switch to Upload form
+            switchTab('upload-sec', document.getElementById('nav-upload'));
+            
+            // Setup UI for Updating
+            editingProductId = id;
+            document.getElementById('form-title').innerText = "Edit Product";
+            document.getElementById('save-btn-text').innerText = "Update Product";
+
+            // Populate Fields
+            document.getElementById('p-name').value = product.name;
+            document.getElementById('p-desc').value = product.description || '';
+            document.getElementById('p-selling').value = product.selling_price;
+            document.getElementById('p-mrp').value = product.mrp || '';
+            document.getElementById('p-cost').value = product.cost_price || '';
+            document.getElementById('p-category').value = product.category;
+            document.getElementById('p-stock').value = product.stock;
+            document.getElementById('p-sku').value = product.sku || '';
+            
+            calculateDiscount();
+
+            // Show existing images
+            selectedFiles = []; // Clear pending files
+            const previewContainer = document.getElementById('image-preview-container');
+            previewContainer.innerHTML = '';
+            if(product.images) {
+                product.images.forEach(url => {
+                    previewContainer.innerHTML += `<img src="${url}" class="preview-img" style="opacity: 0.6;" title="Current image. Upload new to replace.">`;
+                });
+            }
+        }
+
+        function resetForm() {
+            editingProductId = null;
+            document.getElementById('form-title').innerText = "Add New Product";
+            document.getElementById('save-btn-text').innerText = "Save Product";
+            document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            document.getElementById('p-stock').value = '10'; // Default stock
+            document.getElementById('discount-badge').style.display = 'none';
+            document.getElementById('image-preview-container').innerHTML = '';
+            selectedFiles = [];
+        }
+
+        /* ==========================================
+           PRODUCT UPLOAD / UPDATE LOGIC
+           ========================================== */
         function calculateDiscount() {
             let mrp = parseFloat(document.getElementById('p-mrp').value) || 0;
             let selling = parseFloat(document.getElementById('p-selling').value) || 0;
             let badge = document.getElementById('discount-badge');
-            
             if(mrp > 0 && selling < mrp && selling > 0) {
                 let percent = Math.round(((mrp - selling) / mrp) * 100);
                 badge.innerText = percent + '% OFF';
@@ -314,79 +396,80 @@
             } else { badge.style.display = 'none'; }
         }
 
-        // 5. IMAGE PREVIEW LOGIC
         function previewImages(event) {
             const previewContainer = document.getElementById('image-preview-container');
             const files = event.target.files;
-            
+            previewContainer.innerHTML = ''; // Clear preview (replace logic)
+            selectedFiles = [];
             for(let i=0; i<files.length; i++) {
                 selectedFiles.push(files[i]);
-                const imgUrl = URL.createObjectURL(files[i]);
-                const imgElement = document.createElement('img');
-                imgElement.src = imgUrl;
-                imgElement.className = 'preview-img';
-                previewContainer.appendChild(imgElement);
+                previewContainer.innerHTML += `<img src="${URL.createObjectURL(files[i])}" class="preview-img">`;
             }
         }
 
-        // 6. UPLOAD TO SUPABASE DB & STORAGE
         async function submitProductForm() {
             const btn = document.getElementById('save-product-btn');
             const name = document.getElementById('p-name').value;
             const selling_price = document.getElementById('p-selling').value;
+            const stock = document.getElementById('p-stock').value;
             
-            if(!name || !selling_price) return showToast("Title and Selling Price are required!");
-            if(selectedFiles.length === 0) return showToast("Please select at least 1 image file!");
+            if(!name || !selling_price || !stock) return showToast("Title, Price & Stock are required!");
+            
+            // If it's a NEW product, images are mandatory. If EDITING, images are optional (keep old ones)
+            if(!editingProductId && selectedFiles.length === 0) return showToast("Please select an image!");
 
-            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Uploading...";
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Processing...";
             btn.disabled = true;
 
             try {
-                let uploadedImageUrls = [];
+                let finalImageUrls = [];
 
-                // Step A: Upload Images to Supabase Storage
-                for(let file of selectedFiles) {
-                    const uniqueFileName = Date.now() + '-' + file.name.replace(/\s+/g, '-');
-                    
-                    // IMPORTANT: Replace 'product-images' with your actual Supabase bucket name
-                    const { data: uploadData, error: uploadErr } = await db.storage.from('product-images').upload(uniqueFileName, file);
-                    if (uploadErr) throw new Error("Image Upload Failed: " + uploadErr.message);
-
-                    // Get Public URL
-                    const { data: publicUrlData } = db.storage.from('product-images').getPublicUrl(uniqueFileName);
-                    uploadedImageUrls.push(publicUrlData.publicUrl);
+                // Upload new images if selected
+                if(selectedFiles.length > 0) {
+                    for(let file of selectedFiles) {
+                        const uniqueFileName = Date.now() + '-' + file.name.replace(/\s+/g, '-');
+                        const { data: uploadData, error: uploadErr } = await db.storage.from('product-images').upload(uniqueFileName, file);
+                        if (uploadErr) throw new Error(uploadErr.message);
+                        const { data: publicUrlData } = db.storage.from('product-images').getPublicUrl(uniqueFileName);
+                        finalImageUrls.push(publicUrlData.publicUrl);
+                    }
                 }
 
-                // Step B: Save Product details to Database
-                const newProduct = {
+                const productData = {
                     name: name,
                     description: document.getElementById('p-desc').value,
                     category: document.getElementById('p-category').value,
                     sku: document.getElementById('p-sku').value,
-                    color: document.getElementById('p-color').value,
-                    variations: document.getElementById('p-var').value,
                     selling_price: selling_price,
-                    mrp: document.getElementById('p-mrp').value,
+                    mrp: document.getElementById('p-mrp').value || null,
                     cost_price: document.getElementById('p-cost').value || null,
-                    images: uploadedImageUrls // Array of live URLs saved in DB
+                    stock: stock
                 };
 
-                const { data, error } = await db.from('products').insert([newProduct]);
-                if (error) throw error;
-                
-                showToast("Product Published Successfully!");
-                
-                // Clear Form
-                document.querySelectorAll('input, textarea').forEach(el => el.value = '');
-                document.getElementById('discount-badge').style.display = 'none';
-                document.getElementById('image-preview-container').innerHTML = '';
-                selectedFiles = []; // Reset selected files array
+                // Only update images array if new files were uploaded
+                if(finalImageUrls.length > 0) {
+                    productData.images = finalImageUrls;
+                }
 
-            } catch (error) {
-                alert(error.message);
-            } finally {
-                btn.innerHTML = "<i class='fa-solid fa-save'></i> Save Product";
-                btn.disabled = false;
+                if(editingProductId) {
+                    // UPDATE Existing
+                    const { error } = await db.from('products').update(productData).eq('id', editingProductId);
+                    if (error) throw error;
+                    showToast("Product Updated Successfully!");
+                    switchTab('inventory-sec', document.querySelector('.sidebar-menu a:nth-child(3)')); // Go back to inventory
+                } else {
+                    // INSERT New
+                    const { error } = await db.from('products').insert([productData]);
+                    if (error) throw error;
+                    showToast("Product Published Successfully!");
+                    resetForm();
+                }
+                loadDashboardData();
+
+            } catch (error) { alert("Error: " + error.message); } 
+            finally { 
+                btn.innerHTML = `<i class="fa-solid fa-save"></i> ${editingProductId ? 'Update Product' : 'Save Product'}`; 
+                btn.disabled = false; 
             }
         }
 
