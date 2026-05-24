@@ -78,13 +78,16 @@
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; font-size: 14px; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent); color: var(--white); }
         .btn-primary:hover { background: #2563eb; }
+        .btn-secondary { background: var(--white); border: 1px solid var(--border); color: var(--primary); }
+        .btn-secondary:hover { background: #f8fafc; }
         .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
-        /* Tables (Inventory & Orders) */
+        /* Tables */
         .inv-table { width: 100%; border-collapse: collapse; font-size: 14px; }
         .inv-table th { text-align: left; padding: 12px; color: var(--secondary); border-bottom: 2px solid var(--border); font-weight: 500;}
         .inv-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .inv-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; }
+        .inv-img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; cursor: pointer; transition: 0.2s; border: 1px solid var(--border); }
+        .inv-img:hover { opacity: 0.8; transform: scale(1.05); }
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border:none; display:inline-block;}
         .status-active { background: #dcfce7; color: #166534; }
         .status-inactive { background: #fee2e2; color: #b91c1c; }
@@ -92,17 +95,29 @@
         .edit-btn { color: var(--accent); }
         .del-btn { color: var(--danger); }
 
-        /* --- NEW: ORDER ITEMS UI --- */
-        .order-items-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 5px;}
-        .order-items-list::-webkit-scrollbar { width: 4px; }
-        .order-items-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .order-item-mini { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
-        .order-item-mini img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0; }
-        .oi-details { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-        .oi-name { font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-        .oi-price { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+        /* --- MODALS (Popups) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-container { background: var(--white); border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 30px; position: relative; transform: translateY(20px); transition: transform 0.3s; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-overlay.active .modal-container { transform: translateY(0); }
+        .modal-close { position: absolute; top: 20px; right: 20px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--secondary); transition: 0.2s; display: flex; justify-content: center; align-items: center; font-size: 16px; }
+        .modal-close:hover { background: #e2e8f0; color: var(--danger); }
 
-        #toast { visibility: hidden; background: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
+        /* Order Details Modal specific */
+        .order-modal-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px; }
+        .order-modal-header h3 { font-size: 20px; color: var(--primary); }
+        .order-item-full { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; background: #f8fafc; }
+        .order-item-full img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 1px solid #e2e8f0; transition: 0.2s; }
+        .order-item-full img:hover { transform: scale(1.05); }
+        .order-item-info { flex: 1; }
+
+        /* Lightbox (Image Enlarge) Modal specific */
+        #lightbox-modal .modal-container { background: transparent; box-shadow: none; padding: 0; max-width: 90vw; text-align: center; display: flex; justify-content: center; overflow: visible;}
+        #lightbox-modal img { max-width: 100%; max-height: 85vh; border-radius: 8px; object-fit: contain; }
+        #lightbox-modal .modal-close { top: -45px; right: 0; background: rgba(255,255,255,0.2); color: white; }
+        #lightbox-modal .modal-close:hover { background: rgba(255,255,255,0.4); }
+
+        #toast { visibility: hidden; background: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 10000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
     </style>
 </head>
@@ -154,6 +169,7 @@
                     </div>
                 </section>
 
+                <!-- UPLOAD / EDIT PRODUCT SECTION -->
                 <section id="upload-sec" class="dashboard-section">
                     <div class="page-header">
                         <h2 id="form-title">Add New Product</h2>
@@ -215,7 +231,6 @@
                     <div class="card" id="inventory-container">Loading Inventory...</div>
                 </section>
 
-                <!-- ORDERS SECTION (UPDATED FOR DETAILED VIEWS) -->
                 <section id="orders-sec" class="dashboard-section">
                     <div class="page-header"><h2>Manage Orders</h2></div>
                     <div class="card" id="orders-container">Loading Orders...</div>
@@ -225,6 +240,40 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- ==========================================
+         MODALS (POPUPS)
+         ========================================== -->
+         
+    <!-- Order Details Modal -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('order-modal')"><i class="fa-solid fa-xmark"></i></button>
+            
+            <div class="order-modal-header">
+                <h3 id="modal-order-id">Order Details</h3>
+                <p style="color:var(--secondary); font-size:13px; margin-top:5px;" id="modal-order-date">Date</p>
+                <div style="margin-top: 10px;" id="modal-order-status"></div>
+            </div>
+            
+            <h4 style="margin-bottom: 15px; color: var(--secondary); font-size: 14px;">Items in this order:</h4>
+            <div id="modal-order-content">
+                <!-- Detailed items will be injected here -->
+            </div>
+            
+            <div style="margin-top:20px; text-align:right; border-top:1px solid var(--border); padding-top:15px;">
+                <h3 style="color:var(--primary); font-size: 22px;">Total Paid: <span id="modal-order-total" style="color:var(--accent);">₹0</span></h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Enlarge (Lightbox) Modal -->
+    <div class="modal-overlay" id="lightbox-modal" onclick="closeModal('lightbox-modal')">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal('lightbox-modal')"><i class="fa-solid fa-xmark"></i></button>
+            <img id="lightbox-image" src="" alt="Enlarged Image">
+        </div>
     </div>
 
     <div id="toast">Message</div>
@@ -237,6 +286,7 @@
         let selectedFiles = []; 
         let existingImages = []; 
         let globalProducts = []; 
+        let globalOrders = []; // Save loaded orders globally
         let editingProductId = null; 
 
         document.getElementById('admin-login-form').addEventListener('submit', function(e) {
@@ -268,7 +318,27 @@
         }
 
         /* ==========================================
-           1. DASHBOARD & ORDERS LOGIC (UPDATED UI)
+           MODAL & LIGHTBOX FUNCTIONS
+           ========================================== */
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        function openLightbox(imageSrc) {
+            document.getElementById('lightbox-image').src = imageSrc;
+            openModal('lightbox-modal');
+        }
+
+        /* ==========================================
+           1. DASHBOARD & ORDERS LOGIC
            ========================================== */
         async function loadDashboardData() {
             try {
@@ -293,55 +363,34 @@
                 const { data: orders, error } = await db.from('orders').select('*').order('id', { ascending: false });
                 if (error) throw error;
                 
+                globalOrders = orders; // Save to global array for modal access
                 const container = document.getElementById('orders-container');
+                
                 if(!orders || orders.length === 0) {
                     container.innerHTML = '<p style="text-align:center; color:var(--secondary); padding:40px;">No orders found.</p>';
                     return;
                 }
                 
-                let html = `<table class="inv-table"><thead><tr><th style="width:15%;">Order Details</th><th style="width:40%;">Ordered Items</th><th style="width:20%;">Status</th><th style="width:25%;">Update Action</th></tr></thead><tbody>`;
+                let html = `<table class="inv-table"><thead><tr><th>Order ID</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
                 
                 orders.forEach(o => {
                     let badgeColor = o.status === 'Delivered' ? 'var(--success)' : (o.status === 'Shipped' ? 'var(--purple)' : 'var(--warning)');
-                    
-                    // --- Generate HTML for the internal items list ---
-                    let itemsHtml = '<div class="order-items-list">';
-                    if(o.items && Array.isArray(o.items)) {
-                        o.items.forEach(item => {
-                            let thumb = (item.images && item.images.length > 0) ? item.images[0] : (item.image_url || 'https://via.placeholder.com/45');
-                            let price = item.selling_price || item.price;
-                            itemsHtml += `
-                                <div class="order-item-mini">
-                                    <img src="${thumb}" onerror="this.src='https://via.placeholder.com/45'">
-                                    <div class="oi-details">
-                                        <span class="oi-name" title="${item.name}">${item.name}</span>
-                                        <span class="oi-price">₹${price}</span>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        itemsHtml += `<span style="color:var(--secondary); font-size:12px;">Items data unavailable</span>`;
-                    }
-                    itemsHtml += '</div>';
+                    let date = new Date(o.created_at).toLocaleDateString();
 
-                    // --- Create Table Row ---
                     html += `<tr>
-                        <td style="vertical-align:top; padding-top:20px;">
-                            <div style="font-size:16px; font-weight:700; color:var(--primary);">#ORD-${o.id}</div>
-                            <div style="color:var(--accent); font-weight:bold; margin-top:5px;">Total: ₹${o.total_amount}</div>
-                            <div style="font-size:12px; color:var(--secondary); margin-top:5px;">${o.items ? o.items.length : 0} Items</div>
-                        </td>
-                        <td style="vertical-align:top; padding-top:15px;">${itemsHtml}</td>
-                        <td style="vertical-align:top; padding-top:20px;">
-                            <span class="status-badge" style="background:${badgeColor}22; color:${badgeColor}">${o.status}</span>
-                        </td>
-                        <td style="vertical-align:top; padding-top:20px;">
-                            <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; outline:none; font-weight:500; cursor:pointer;">
-                                <option value="Pending" ${o.status==='Pending'?'selected':''}>Set as Pending</option>
-                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Set as Shipped</option>
-                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>Set as Delivered</option>
-                            </select>
+                        <td><b>#ORD-${o.id}</b></td>
+                        <td style="color:var(--secondary);">${date}</td>
+                        <td style="color:var(--accent); font-weight:bold;">₹${o.total_amount}</td>
+                        <td><span class="status-badge" style="background:${badgeColor}22; color:${badgeColor}">${o.status}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-secondary" style="padding: 6px 12px; font-size:12px;" onclick="viewOrderDetails(${o.id})"><i class="fa-solid fa-eye"></i> View</button>
+                                <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:6px; border:1px solid var(--border); border-radius:6px; font-size:12px; outline:none; font-weight:500;">
+                                    <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
+                                    <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
+                                    <option value="Delivered" ${o.status==='Delivered'?'selected':''}>Delivered</option>
+                                </select>
+                            </div>
                         </td>
                     </tr>`;
                 });
@@ -350,12 +399,50 @@
             } catch(e) { console.error(e); }
         }
 
+        // VIEW ORDER IN MODAL
+        function viewOrderDetails(orderId) {
+            const order = globalOrders.find(o => o.id === orderId);
+            if(!order) return;
+
+            document.getElementById('modal-order-id').innerText = `Order #ORD-${order.id}`;
+            document.getElementById('modal-order-date').innerText = `Placed on: ${new Date(order.created_at).toLocaleString()}`;
+            document.getElementById('modal-order-total').innerText = `₹${order.total_amount}`;
+            
+            let badgeColor = order.status === 'Delivered' ? 'var(--success)' : (order.status === 'Shipped' ? 'var(--purple)' : 'var(--warning)');
+            document.getElementById('modal-order-status').innerHTML = `<span class="status-badge" style="background:${badgeColor}22; color:${badgeColor}; font-size:14px; padding: 6px 12px;">Current Status: ${order.status}</span>`;
+
+            const contentDiv = document.getElementById('modal-order-content');
+            let itemsHtml = '';
+
+            if(order.items && Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    let thumb = (item.images && item.images.length > 0) ? item.images[0] : (item.image_url || 'https://via.placeholder.com/80');
+                    let price = item.selling_price || item.price;
+                    
+                    itemsHtml += `
+                    <div class="order-item-full">
+                        <img src="${thumb}" onclick="openLightbox('${thumb}')" title="Click to enlarge">
+                        <div class="order-item-info">
+                            <h4 style="color:var(--primary); font-size:15px; margin-bottom:4px;">${item.name}</h4>
+                            <div style="font-size:13px; color:var(--secondary); margin-bottom:6px;">SKU: ${item.sku || 'N/A'} | Qty: 1</div>
+                            <div style="font-size:14px; font-weight:700; color:var(--accent);">₹${price}</div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                itemsHtml = `<p>No item details found.</p>`;
+            }
+
+            contentDiv.innerHTML = itemsHtml;
+            openModal('order-modal');
+        }
+
         async function updateOrderStatus(id, status) {
             try {
                 await db.from('orders').update({status: status}).eq('id', id);
                 showToast(`Order #${id} marked as ${status}`);
-                loadOrdersData(); // Refresh list
-                loadDashboardData(); // Refresh dashboard counters
+                loadOrdersData(); 
+                loadDashboardData(); 
             } catch(e) { alert("Failed to update order"); }
         }
 
@@ -374,12 +461,13 @@
                     html += `<tr><td colspan="5" style="text-align:center;">No products in inventory.</td></tr>`;
                 } else {
                     data.forEach(p => {
-                        let thumb = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/40';
+                        let thumb = (p.images && p.images.length > 0) ? p.images[0] : 'https://via.placeholder.com/45';
                         let statusClass = p.is_active ? 'status-active' : 'status-inactive';
                         let statusText = p.is_active ? 'Active' : 'Inactive';
                         
+                        // Added openLightbox to Image
                         html += `<tr>
-                            <td><img src="${thumb}" class="inv-img"></td>
+                            <td><img src="${thumb}" class="inv-img" title="Click to enlarge" onclick="openLightbox('${thumb}')"></td>
                             <td><div style="font-weight:600;">${p.name}</div><div style="font-size:12px; color:var(--secondary)">SKU: ${p.sku || 'N/A'}</div></td>
                             <td><div style="color:var(--accent); font-weight:600;">₹${p.selling_price}</div><div style="font-size:12px;">Stock: <b>${p.stock}</b></div></td>
                             <td><button class="status-badge ${statusClass}" onclick="toggleStatus(${p.id}, ${p.is_active})">${statusText}</button></td>
@@ -418,7 +506,7 @@
             existingImages.forEach((url, index) => {
                 container.innerHTML += `
                 <div class="img-wrap existing">
-                    <img src="${url}" class="preview-img" title="Already Saved">
+                    <img src="${url}" class="preview-img" title="Click to enlarge" onclick="openLightbox('${url}')" style="cursor:pointer;">
                     <button type="button" class="img-remove-btn" onclick="removeExistingImage(${index})"><i class="fa-solid fa-xmark"></i></button>
                 </div>`;
             });
