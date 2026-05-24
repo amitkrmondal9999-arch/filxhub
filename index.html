@@ -75,7 +75,6 @@
         <div class="logo" onclick="switchTab('home')">LUXE.</div>
         <div class="nav-links desktop-only">
             <a onclick="switchTab('home')" class="active" data-tab="home">Home</a>
-            <a href="admin.html">Admin Panel</a> <!-- REDIRECTS TO ADMIN FILE -->
         </div>
         <div class="nav-icons">
             <div class="cart-icon-container" onclick="switchTab('cart')">
@@ -119,16 +118,17 @@
         </div>
     </section>
 
+    <!-- Bottom Navigation without Admin -->
     <nav class="bottom-nav mobile-only">
         <div class="nav-item active" onclick="switchTab('home')" data-tab="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
         <div class="nav-item" onclick="switchTab('cart')" data-tab="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></div>
-        <a href="admin.html" class="nav-item" style="text-decoration: none;"><i class="fa-solid fa-shield-halved"></i><span>Admin</span></a>
         <div class="nav-item" onclick="switchTab('profile')" data-tab="profile"><i class="fa-regular fa-user"></i><span>Profile</span></div>
     </nav>
 
     <div id="toast">Message</div>
 
     <script>
+        // Supabase Initialization
         const SUPABASE_URL = 'https://sojeovapebcmofnnafbu.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -153,7 +153,7 @@
 
         async function fetchProducts() {
             try {
-                const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+                const { data, error } = await db.from('products').select('*').order('id', { ascending: false });
                 if (error) throw error;
                 allProducts = data;
                 renderProducts(allProducts);
