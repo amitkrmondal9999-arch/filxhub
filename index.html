@@ -3,159 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlix - Watch Movies & TV Shows</title>
+    <title>Luxe | Premium E-Commerce</title>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-        body { background-color: #141414; color: white; overflow-x: hidden; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #111111;
+            --secondary: #666666;
+            --bg-color: #f4f5f7;
+            --white: #ffffff;
+            --accent: #d4af37;
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body { background-color: var(--bg-color); color: var(--primary); padding-bottom: 70px; }
+
+        /* Navigation */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; background: var(--white); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .logo { font-size: 24px; font-weight: 700; letter-spacing: 2px; cursor: pointer; }
+        .nav-links a { text-decoration: none; color: var(--secondary); margin: 0 15px; font-weight: 500; cursor: pointer; transition: 0.3s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+        .nav-icons i { font-size: 20px; margin-left: 20px; cursor: pointer; color: var(--primary); transition: 0.3s; }
+        .nav-icons i:hover { color: var(--accent); }
         
-        /* Navbar */
-        header { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.7) 10%, transparent); z-index: 100; transition: background 0.3s; }
-        header.scrolled { background-color: #141414; }
-        .logo { color: #E50914; font-size: 2rem; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 0.9rem; transition: color 0.3s; }
-        .nav-links a:hover { color: #b3b3b3; }
+        .cart-icon-container { position: relative; display: inline-block; }
+        .cart-badge { position: absolute; top: -8px; right: -10px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
 
-        /* Hero Section */
-        .hero { position: relative; height: 80vh; background: url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070') center/cover no-repeat; display: flex; align-items: center; padding: 0 40px; }
-        .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 60%), linear-gradient(to top, #141414 0%, transparent 20%); }
-        .hero-content { position: relative; z-index: 10; max-width: 600px; }
-        .hero-title { font-size: 4rem; font-weight: 800; margin-bottom: 15px; }
-        .hero-desc { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.5; text-shadow: 2px 2px 4px rgba(0,0,0,0.45); }
-        .btn { padding: 10px 25px; font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer; border: none; outline: none; margin-right: 10px; transition: transform 0.2s; }
-        .btn:hover { transform: scale(1.05); }
-        .btn-play { background-color: white; color: black; }
-        .btn-info { background-color: rgba(109, 109, 110, 0.7); color: white; }
+        /* Views Setup */
+        .view-section { display: none; padding: 20px 5%; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Movie Rows */
-        .row { margin: 20px 0 20px 40px; }
-        .row h2 { font-size: 1.4rem; margin-bottom: 15px; }
-        .posters { display: flex; overflow-y: hidden; overflow-x: scroll; scroll-behavior: smooth; padding: 20px 0; }
-        .posters::-webkit-scrollbar { display: none; }
-        .poster { object-fit: cover; width: 250px; max-height: 140px; margin-right: 15px; border-radius: 4px; transition: transform 450ms; cursor: pointer; }
-        .poster:hover { transform: scale(1.08); }
+        /* Home Page */
+        .category-scroll { display: flex; overflow-x: auto; padding: 10px 0 20px 0; gap: 15px; scrollbar-width: none; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn { padding: 8px 20px; border: 1px solid #ddd; background: var(--white); border-radius: 20px; cursor: pointer; font-weight: 500; transition: 0.3s; white-space: nowrap; }
+        .cat-btn.active, .cat-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
 
-        /* Video Modal */
-        #videoModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
-        #videoModal video { width: 80%; max-width: 1000px; outline: none; border-radius: 8px; }
-        .close-btn { position: absolute; top: 30px; right: 40px; color: white; font-size: 2rem; cursor: pointer; }
+        .product-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .product-card { background: var(--white); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; position: relative; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        .product-img { width: 100%; height: 220px; object-fit: cover; }
+        .product-info { padding: 15px; }
+        .product-title { font-size: 16px; font-weight: 600; margin-bottom: 5px; }
+        .product-price { font-size: 18px; color: var(--accent); font-weight: 700; }
+        .add-to-cart-btn { width: 100%; padding: 10px; margin-top: 10px; background: var(--primary); color: var(--white); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .add-to-cart-btn:hover { background: var(--accent); color: var(--primary); }
 
+        /* Admin & Forms */
+        .admin-panel, .profile-panel, .cart-panel, .login-panel { background: var(--white); padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; transition: 0.3s; }
+        .form-group input:focus { border-color: var(--accent); }
+        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: var(--white); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .btn-submit:hover { background: var(--accent); color: var(--primary); }
+        .btn-logout { background: var(--danger); margin-top: 15px; }
+        .btn-logout:hover { background: #ff2a3f; color: white; }
+
+        /* Cart View */
+        .cart-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #eee; padding: 15px 0; }
+        .cart-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .cart-details { flex-grow: 1; margin-left: 15px; }
+        .cart-remove { color: var(--danger); cursor: pointer; font-size: 18px; }
+        .cart-total { text-align: right; font-size: 20px; font-weight: 700; margin-top: 20px; color: var(--primary); }
+
+        /* Bottom Nav (Mobile) */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--white); display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--secondary); font-size: 12px; cursor: pointer; }
+        .nav-item i { font-size: 20px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Toast Notification */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 80px; transform: translateX(-50%); font-size: 14px; }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadeout { from {bottom: 80px; opacity: 1;} to {bottom: 60px; opacity: 0;} }
+
+        /* Utilities */
+        .loader { text-align: center; font-size: 16px; color: var(--secondary); padding: 50px 0; width: 100%; grid-column: 1 / -1; }
+        .header-title { font-size: 24px; margin-bottom: 20px; text-align: center; border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px;}
+
+        /* Responsive */
+        .mobile-only { display: none; }
         @media (max-width: 768px) {
-            header { padding: 15px 20px; }
-            .hero { height: 60vh; padding: 0 20px; }
-            .hero-title { font-size: 2.5rem; }
-            .nav-links { display: none; }
-            .poster { width: 150px; max-height: 85px; }
+            .desktop-only { display: none; }
+            .mobile-only { display: flex; }
         }
     </style>
 </head>
 <body>
 
-    <header id="navbar">
-        <div class="logo">StreamFlix</div>
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#">TV Shows</a>
-            <a href="#">Movies</a>
-            <a href="#">New & Popular</a>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="logo" onclick="switchTab('home')">LUXE.</div>
+        <div class="nav-links desktop-only">
+            <a onclick="switchTab('home')" class="active" data-tab="home">Home</a>
+            <a onclick="switchTab('admin')" data-tab="admin">Admin Panel</a>
         </div>
-    </header>
-
-    <div class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">Featured Movie</h1>
-            <p class="hero-desc">Experience the most thrilling action movie of the year. Watch now to discover the hidden secrets of the universe.</p>
-            <button class="btn btn-play">▶ Play</button>
-            <button class="btn btn-info">ℹ More Info</button>
+        <div class="nav-icons">
+            <div class="cart-icon-container" onclick="switchTab('cart')">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="cart-badge" id="cart-count">0</span>
+            </div>
+            <i class="fa-regular fa-user desktop-only" onclick="switchTab('profile')"></i>
         </div>
-    </div>
+    </nav>
 
-    <div class="row">
-        <h2>Recently Added</h2>
-        <div class="posters" id="movie-container">
-            <!-- Videos dynamically injected here via Firebase -->
+    <!-- VIEWS CONTAINER -->
+    
+    <!-- 1. Home View -->
+    <section id="home-view" class="view-section active">
+        <div class="category-scroll">
+            <button class="cat-btn active" onclick="filterProducts('All', this)">All</button>
+            <button class="cat-btn" onclick="filterProducts('Men', this)">Men</button>
+            <button class="cat-btn" onclick="filterProducts('Women', this)">Women</button>
+            <button class="cat-btn" onclick="filterProducts('Electronics', this)">Electronics</button>
         </div>
-    </div>
+        <div class="product-container" id="product-list">
+            <div class="loader"><i class="fa-solid fa-spinner fa-spin"></i> Loading Premium Products...</div>
+        </div>
+    </section>
 
-    <!-- Video Player Modal -->
-    <div id="videoModal">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <video id="player" controls controlsList="nodownload"></video>
-    </div>
+    <!-- 2. Cart View -->
+    <section id="cart-view" class="view-section">
+        <div class="cart-panel">
+            <h2 class="header-title">Your Shopping Cart</h2>
+            <div id="cart-items-container"></div>
+            <div class="cart-total" id="cart-total-price">Total: ₹0</div>
+            <button class="btn-submit" style="margin-top:20px;">Proceed to Checkout</button>
+        </div>
+    </section>
 
-    <script type="module">
-        // Firebase Configuration (Replace with your actual keys)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- 3. Profile View -->
+    <section id="profile-view" class="view-section">
+        <div class="profile-panel" style="text-align: center;">
+            <i class="fa-regular fa-circle-user" style="font-size: 80px; color: var(--accent); margin-bottom: 15px;"></i>
+            <h2>Welcome Guest</h2>
+            <p style="color: var(--secondary); margin-bottom: 20px;">Please login to manage your orders</p>
+            <button class="btn-submit">Login as Customer</button>
+        </div>
+    </section>
 
-        const firebaseConfig = {
-  apiKey: "AIzaSyBRFRPTE6tWgklvjsHx8HZ_A_GNwc4a8Q0",
-  authDomain: "flixhub-c9cf3.firebaseapp.com",
-  projectId: "flixhub-c9cf3",
-  storageBucket: "flixhub-c9cf3.firebasestorage.app",
-  messagingSenderId: "552182480135",
-  appId: "1:552182480135:web:a62d19a9f990e09c0299a2",
-  measurementId: "G-CTQ879CYFD"
-};
+    <!-- 4. Admin Login View (NEW) -->
+    <section id="admin-login-view" class="view-section">
+        <div class="login-panel" style="text-align: center;">
+            <i class="fa-solid fa-lock" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2 class="header-title">Admin Restricted Area</h2>
+            <p style="color: var(--secondary); margin-bottom: 20px; font-size: 14px;">Authorized personnel only.</p>
+            
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="admin-email" placeholder="admin@luxe.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="admin-pass" placeholder="Enter Password" required>
+                </div>
+                <button type="submit" class="btn-submit">Secure Login</button>
+            </form>
+        </div>
+    </section>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    <!-- 5. Admin Dashboard View (Protected) -->
+    <section id="admin-view" class="view-section">
+        <div class="admin-panel">
+            <h2 class="header-title">Admin Dashboard</h2>
+            <p style="color: var(--success); margin-bottom: 20px; font-weight: 500;"><i class="fa-solid fa-circle-check"></i> Logged in as Admin</p>
+            
+            <form id="add-product-form">
+                <div class="form-group">
+                    <label>Product Name</label>
+                    <input type="text" id="p-name" placeholder="E.g. Rolex Watch" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (₹)</label>
+                    <input type="number" id="p-price" placeholder="E.g. 5000" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="p-category" required>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                        <option value="Electronics">Electronics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image URL (Link)</label>
+                    <input type="url" id="p-image" placeholder="https://example.com/image.jpg" required>
+                </div>
+                <button type="submit" class="btn-submit" id="upload-btn">Upload Product</button>
+            </form>
 
-        // Fetch Movies from Firestore
-        async function fetchMovies() {
-            const container = document.getElementById('movie-container');
-            container.innerHTML = "<p>Loading videos...</p>";
+            <button class="btn-submit btn-logout" onclick="adminLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout Admin</button>
+        </div>
+    </section>
 
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav mobile-only">
+        <div class="nav-item active" onclick="switchTab('home')" data-tab="home">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('cart')" data-tab="cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('admin')" data-tab="admin">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Admin</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile')" data-tab="profile">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+        </div>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="toast">Message goes here</div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script>
+        // ==========================================
+        // 1. SUPABASE CONFIGURATION
+        // ==========================================
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE'; 
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==========================================
+        // 2. STATE MANAGEMENT
+        // ==========================================
+        let allProducts = [];
+        let cart = [];
+        let isAdminLoggedIn = false; // Security State
+
+        // ==========================================
+        // 3. NAVIGATION (SPA LOGIC)
+        // ==========================================
+        function switchTab(tabName) {
+            // Admin Protection Logic
+            if (tabName === 'admin' && !isAdminLoggedIn) {
+                tabName = 'admin-login'; // Redirect to login screen if not logged in
+            }
+
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+            // Show selected view
+            document.getElementById(`${tabName}-view`).classList.add('active');
+
+            // Update Desktop Nav styles
+            document.querySelectorAll('.nav-links a').forEach(nav => nav.classList.remove('active'));
+            // Map admin-login back to admin tab for highlighting
+            let highlightTab = (tabName === 'admin-login') ? 'admin' : tabName; 
+            const activeDesktopNav = document.querySelector(`.nav-links a[data-tab="${highlightTab}"]`);
+            if(activeDesktopNav) activeDesktopNav.classList.add('active');
+
+            // Update Mobile Bottom Nav styles
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            const activeMobileNav = document.querySelector(`.nav-item[data-tab="${highlightTab}"]`);
+            if(activeMobileNav) activeMobileNav.classList.add('active');
+
+            // View Specific Triggers
+            if(tabName === 'cart') renderCart();
+            if(tabName === 'home') fetchProducts();
+        }
+
+        // ==========================================
+        // 4. ADMIN AUTHENTICATION
+        // ==========================================
+        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-pass').value;
+
+            // Simple validation (In real project, check via Supabase Auth)
+            if(email === 'admin@luxe.com' && pass === 'admin123') {
+                isAdminLoggedIn = true;
+                showToast("Admin Login Successful!");
+                this.reset();
+                switchTab('admin'); // Go to dashboard
+            } else {
+                showToast("Invalid Credentials!");
+            }
+        });
+
+        function adminLogout() {
+            isAdminLoggedIn = false;
+            showToast("Admin Logged Out");
+            switchTab('home'); // Send back to home
+        }
+
+        // ==========================================
+        // 5. FETCH & RENDER PRODUCTS (HOME)
+        // ==========================================
+        async function fetchProducts() {
             try {
-                const q = query(collection(db, "videos"), orderBy("timestamp", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                container.innerHTML = ""; // Clear loading
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const img = document.createElement('img');
-                    img.src = data.thumbnailUrl;
-                    img.className = 'poster';
-                    img.alt = data.title;
-                    img.onclick = () => openModal(data.videoUrl);
-                    container.appendChild(img);
-                });
-
-                if(querySnapshot.empty) {
-                    container.innerHTML = "<p style='color:#808080;'>No videos uploaded yet. Visit Admin Panel.</p>";
-                }
+                const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+                if (error) throw error;
+                allProducts = data;
+                renderProducts(allProducts);
             } catch (error) {
-                console.error("Error fetching videos: ", error);
-                container.innerHTML = "<p>Error loading content.</p>";
+                document.getElementById('product-list').innerHTML = `<p class="loader" style="color:red;">Database connection error. Please check Supabase API keys.</p>`;
             }
         }
 
-        fetchMovies();
+        function renderProducts(products) {
+            const list = document.getElementById('product-list');
+            list.innerHTML = '';
+            
+            if (products.length === 0) {
+                list.innerHTML = '<p class="loader">No products available. Add from Admin Panel!</p>';
+                return;
+            }
 
-        // Navbar Scroll Effect
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('navbar');
-            if(window.scrollY > 50) nav.classList.add('scrolled');
-            else nav.classList.remove('scrolled');
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                const prodData = JSON.stringify(p).replace(/"/g, '&quot;');
+                
+                card.innerHTML = `
+                    <img src="${p.image_url}" alt="${p.name}" class="product-img" onerror="this.src='https://via.placeholder.com/250?text=No+Image'">
+                    <div class="product-info">
+                        <h3 class="product-title">${p.name}</h3>
+                        <p class="product-price">₹${p.price}</p>
+                        <button class="add-to-cart-btn" onclick="addToCart(${prodData})">
+                            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function filterProducts(category, btnElement) {
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            if (category === 'All') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(item => item.category === category);
+                renderProducts(filtered);
+            }
+        }
+
+        // ==========================================
+        // 6. CART SYSTEM
+        // ==========================================
+        function addToCart(product) {
+            cart.push(product);
+            document.getElementById('cart-count').innerText = cart.length;
+            showToast(`Added ${product.name} to Cart`);
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            document.getElementById('cart-count').innerText = cart.length;
+            renderCart();
+            showToast("Item removed from cart");
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            const totalEl = document.getElementById('cart-total-price');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#666;">Your cart is empty.</p>';
+                totalEl.innerText = 'Total: ₹0';
+                return;
+            }
+
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += parseFloat(item.price);
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <img src="${item.image_url}" onerror="this.src='https://via.placeholder.com/60'">
+                    <div class="cart-details">
+                        <h4>${item.name}</h4>
+                        <p style="color:var(--accent); font-weight:bold;">₹${item.price}</p>
+                    </div>
+                    <i class="fa-solid fa-trash cart-remove" onclick="removeFromCart(${index})"></i>
+                `;
+                container.appendChild(div);
+            });
+            totalEl.innerText = `Total: ₹${total}`;
+        }
+
+        // ==========================================
+        // 7. UPLOAD DATA TO SUPABASE (ADMIN ONLY)
+        // ==========================================
+        document.getElementById('add-product-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('upload-btn');
+            btn.innerText = "Uploading...";
+            btn.disabled = true;
+
+            const newProduct = {
+                name: document.getElementById('p-name').value,
+                price: document.getElementById('p-price').value,
+                category: document.getElementById('p-category').value,
+                image_url: document.getElementById('p-image').value
+            };
+
+            try {
+                const { data, error } = await supabase.from('products').insert([newProduct]);
+                if (error) throw error;
+                
+                showToast("Product Uploaded Successfully!");
+                this.reset();
+                fetchProducts();
+            } catch (error) {
+                alert("Error: " + error.message);
+            } finally {
+                btn.innerText = "Upload Product";
+                btn.disabled = false;
+            }
         });
-    </script>
 
-    <script>
-        // Modal Logic
-        const modal = document.getElementById('videoModal');
-        const player = document.getElementById('player');
-
-        function openModal(videoUrl) {
-            modal.style.display = 'flex';
-            player.src = videoUrl;
-            player.play();
+        // ==========================================
+        // 8. UTILITY: TOAST NOTIFICATION
+        // ==========================================
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
         }
 
-        function closeModal() {
-            modal.style.display = 'none';
-            player.pause();
-            player.src = "";
-        }
+        // INITIALIZE APP
+        fetchProducts();
     </script>
 </body>
 </html>
