@@ -92,6 +92,16 @@
         .edit-btn { color: var(--accent); }
         .del-btn { color: var(--danger); }
 
+        /* --- NEW: ORDER ITEMS UI --- */
+        .order-items-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; padding-right: 5px;}
+        .order-items-list::-webkit-scrollbar { width: 4px; }
+        .order-items-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .order-item-mini { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid var(--border); }
+        .order-item-mini img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; border: 1px solid #e2e8f0; }
+        .oi-details { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .oi-name { font-size: 13px; font-weight: 600; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .oi-price { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 2px; }
+
         #toast { visibility: hidden; background: var(--primary); color: #fff; text-align: center; border-radius: 8px; padding: 16px 30px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
     </style>
@@ -205,6 +215,7 @@
                     <div class="card" id="inventory-container">Loading Inventory...</div>
                 </section>
 
+                <!-- ORDERS SECTION (UPDATED FOR DETAILED VIEWS) -->
                 <section id="orders-sec" class="dashboard-section">
                     <div class="page-header"><h2>Manage Orders</h2></div>
                     <div class="card" id="orders-container">Loading Orders...</div>
@@ -223,9 +234,8 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_tsTCwxwpZNPaw45byTGF6Q_4PsRahF3';
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // State Tracking variables
-        let selectedFiles = []; // Holds NEW files to upload
-        let existingImages = []; // Holds OLD urls when editing
+        let selectedFiles = []; 
+        let existingImages = []; 
         let globalProducts = []; 
         let editingProductId = null; 
 
@@ -258,7 +268,7 @@
         }
 
         /* ==========================================
-           1. DASHBOARD & ORDERS LOGIC
+           1. DASHBOARD & ORDERS LOGIC (UPDATED UI)
            ========================================== */
         async function loadDashboardData() {
             try {
@@ -289,21 +299,48 @@
                     return;
                 }
                 
-                let html = `<table class="inv-table"><thead><tr><th>Order ID</th><th>Amount</th><th>Items</th><th>Status</th><th>Update Action</th></tr></thead><tbody>`;
+                let html = `<table class="inv-table"><thead><tr><th style="width:15%;">Order Details</th><th style="width:40%;">Ordered Items</th><th style="width:20%;">Status</th><th style="width:25%;">Update Action</th></tr></thead><tbody>`;
                 
                 orders.forEach(o => {
                     let badgeColor = o.status === 'Delivered' ? 'var(--success)' : (o.status === 'Shipped' ? 'var(--purple)' : 'var(--warning)');
                     
+                    // --- Generate HTML for the internal items list ---
+                    let itemsHtml = '<div class="order-items-list">';
+                    if(o.items && Array.isArray(o.items)) {
+                        o.items.forEach(item => {
+                            let thumb = (item.images && item.images.length > 0) ? item.images[0] : (item.image_url || 'https://via.placeholder.com/45');
+                            let price = item.selling_price || item.price;
+                            itemsHtml += `
+                                <div class="order-item-mini">
+                                    <img src="${thumb}" onerror="this.src='https://via.placeholder.com/45'">
+                                    <div class="oi-details">
+                                        <span class="oi-name" title="${item.name}">${item.name}</span>
+                                        <span class="oi-price">₹${price}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        itemsHtml += `<span style="color:var(--secondary); font-size:12px;">Items data unavailable</span>`;
+                    }
+                    itemsHtml += '</div>';
+
+                    // --- Create Table Row ---
                     html += `<tr>
-                        <td><b>#ORD-${o.id}</b></td>
-                        <td style="color:var(--accent); font-weight:bold;">₹${o.total_amount}</td>
-                        <td>${o.items ? o.items.length : 0} items</td>
-                        <td><span class="status-badge" style="background:${badgeColor}22; color:${badgeColor}">${o.status}</span></td>
-                        <td>
-                            <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:6px; border:1px solid var(--border); border-radius:6px; font-size:12px; outline:none;">
-                                <option value="Pending" ${o.status==='Pending'?'selected':''}>Pending</option>
-                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Shipped</option>
-                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>Delivered</option>
+                        <td style="vertical-align:top; padding-top:20px;">
+                            <div style="font-size:16px; font-weight:700; color:var(--primary);">#ORD-${o.id}</div>
+                            <div style="color:var(--accent); font-weight:bold; margin-top:5px;">Total: ₹${o.total_amount}</div>
+                            <div style="font-size:12px; color:var(--secondary); margin-top:5px;">${o.items ? o.items.length : 0} Items</div>
+                        </td>
+                        <td style="vertical-align:top; padding-top:15px;">${itemsHtml}</td>
+                        <td style="vertical-align:top; padding-top:20px;">
+                            <span class="status-badge" style="background:${badgeColor}22; color:${badgeColor}">${o.status}</span>
+                        </td>
+                        <td style="vertical-align:top; padding-top:20px;">
+                            <select onchange="updateOrderStatus(${o.id}, this.value)" style="padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; outline:none; font-weight:500; cursor:pointer;">
+                                <option value="Pending" ${o.status==='Pending'?'selected':''}>Set as Pending</option>
+                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>Set as Shipped</option>
+                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>Set as Delivered</option>
                             </select>
                         </td>
                     </tr>`;
@@ -378,7 +415,6 @@
             const container = document.getElementById('image-preview-container');
             container.innerHTML = '';
             
-            // 1. Show Existing Images (Green border)
             existingImages.forEach((url, index) => {
                 container.innerHTML += `
                 <div class="img-wrap existing">
@@ -387,7 +423,6 @@
                 </div>`;
             });
             
-            // 2. Show New Selected Files (Blue dashed border)
             selectedFiles.forEach((file, index) => {
                 container.innerHTML += `
                 <div class="img-wrap new">
@@ -413,7 +448,6 @@
                 selectedFiles.push(files[i]);
             }
             renderImagePreviews();
-            // clear input value so same file can be selected again if needed
             document.getElementById('p-images').value = ''; 
         }
 
@@ -440,7 +474,6 @@
             
             calculateDiscount();
 
-            // Load existing images into memory & render them
             existingImages = product.images ? [...product.images] : [];
             selectedFiles = []; 
             renderImagePreviews();
@@ -478,7 +511,6 @@
             
             if(!name || !selling_price || !stock) return showToast("Title, Price & Stock are required!");
             
-            // Check if there's at least 1 image (old or new)
             if(existingImages.length === 0 && selectedFiles.length === 0) {
                 return showToast("Please add at least 1 image!");
             }
@@ -487,9 +519,8 @@
             btn.disabled = true;
 
             try {
-                let finalImageUrls = [...existingImages]; // Start with the old images that weren't deleted
+                let finalImageUrls = [...existingImages]; 
 
-                // Upload NEW images to storage
                 if(selectedFiles.length > 0) {
                     for(let file of selectedFiles) {
                         const uniqueFileName = Date.now() + '-' + file.name.replace(/\s+/g, '-');
@@ -500,7 +531,6 @@
                     }
                 }
 
-                // Prepare DB Object
                 const productData = {
                     name: name,
                     description: document.getElementById('p-desc').value,
@@ -510,7 +540,7 @@
                     mrp: document.getElementById('p-mrp').value || null,
                     cost_price: document.getElementById('p-cost').value || null,
                     stock: stock,
-                    images: finalImageUrls // Updated array of images
+                    images: finalImageUrls 
                 };
 
                 if(editingProductId) {
